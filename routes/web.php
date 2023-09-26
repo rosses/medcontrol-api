@@ -160,6 +160,7 @@ Route::group([
     ], function($router) {
         Route::get('/next', 'DateController@next');
         Route::post('/confirm', 'DateController@confirm');
+        Route::post('/{id}', 'DateController@saveSession');
     });
 
     /* Auth */

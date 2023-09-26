@@ -52,5 +52,35 @@ class DateController extends Controller
         }
        
     }
+    public function saveSession(Request $request) {
+
+        try {
+            
+            $date= Date::where("DateID", $request->DateID)->first();
+            $date->Confirmed = 1;
+            $date->AntDrugs = $request->AntDrugs;
+            $date->AntAllergy = $request->AntAllergy;
+            $date->AntSurgical = $request->AntSurgical;
+            $date->DiagnosisID = $request->DiagnosisID;
+            $date->SurgeryID = $request->SurgeryID;
+            $date->Obs = $request->Obs;
+            $date->UpdatedUserID = JWTAuth::user()->UserID;
+            $date->UpdatedAt = date("Y-m-d H:i:s");
+            $date->save();
+
+
+
+
+            return response()->json([
+                "success" => true 
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 400);
+        }
+
+    }
     
 }

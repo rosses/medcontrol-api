@@ -129,5 +129,9 @@ class PeopleController extends Controller
         }
         return response()->json($output);
     }
-    
+    public function update($id, Request $request) {
+        $row = People::findOrFail($id);
+        $row->update($request->all());
+        return response()->json($row, 200);
+    }
 }
