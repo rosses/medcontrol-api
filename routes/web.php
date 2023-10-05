@@ -93,6 +93,18 @@ Route::group([
         Route::delete('/{id}', 'ExamController@delete');
     });
 
+    /* Masterdata ExamDatas endpoints */
+    Route::group([
+        'prefix' => 'examdata',
+        'middleware' => 'auth'
+    ], function($router) {
+        Route::get('/', 'ExamDataController@index');
+        Route::get('/{id}', 'ExamDataController@show');
+        Route::post('/', 'ExamDataController@create');
+        Route::post('/{id}', 'ExamDataController@update');
+        Route::delete('/{id}', 'ExamDataController@delete');
+    });
+
     /* Masterdata Surgery endpoints */
     Route::group([
         'prefix' => 'surgery',

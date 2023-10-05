@@ -91,7 +91,11 @@ class PeopleController extends Controller
     }
 
     public function show($id) {
-        return response()->json(People::find($id));
+        $rows = People::select('Peoples.*','Groups.Name as GroupName')
+                ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
+                ->where("PeopleID",$id)
+                ->first();
+        return response()->json($rows); 
     }
     public function datesForPeople($id) {
         $rows = Date::select("Dates.*","Users.Name as UpdatedUserName")
