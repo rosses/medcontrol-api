@@ -112,7 +112,7 @@ class PeopleController extends Controller
                              ->join("Exams","Exams.ExamID","=","Orders.ExamID")
                              ->where("DateID", $row->DateID)->get();
             $row["evolutions"] = Evolution::where("DateID", $row->DateID)->get();
-
+            
             $ap = Anthropometry::where("DateID", $row->DateID)->first();
             if (!$ap) {
                 $ap = new Anthropometry();
