@@ -26,7 +26,9 @@ class ExamDataController extends Controller
 
     public function update($id, Request $request) {
         $row = ExamData::findOrFail($id);
-        $row->update($request->all());
+        $row->Name = $request->Name;
+        $row->ExamID = $request->ExamID;
+        $row->save();
         return response()->json($row, 200);
     }
     public function delete($id) {
