@@ -11,6 +11,7 @@ use App\Models\People;
 use App\Models\Order;
 use App\Models\Recipe;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 
@@ -91,20 +92,29 @@ class PeopleController extends Controller
     }
 
     public function show($id) {
-        $rows = People::select('Peoples.*','Groups.Name as GroupName')
+        $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName')
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
+                ->join('Healths','Healths.HealthID','=','Peoples.HealthID')
                 ->where("PeopleID",$id)
                 ->first();
         return response()->json($rows); 
     }
     public function datesForPeople($id) {
-        $rows = Date::select("Dates.*","Users.Name as UpdatedUserName")
+        $rows = Date::select(
+                    "Dates.*",
+                    "Users.Name as UpdatedUserName",
+                    DB::raw("(SELECT COUNT(*) FROM Certificates X WHERE X.DateID = Dates.DateID) as certificates"),
+                    DB::raw("(SELECT COUNT(*) FROM Recipes X WHERE X.DateID = Dates.DateID) as recipes"),
+                    DB::raw("(SELECT COUNT(*) FROM Interviews X WHERE X.DateID = Dates.DateID) as interviews"),
+                    DB::raw("(SELECT COUNT(*) FROM Orders X WHERE X.DateID = Dates.DateID) as orders"),
+                )
                 ->where("PeopleID",$id)
                 ->join("Users","Users.UserID","=","Dates.UpdatedUserID")
                 ->orderBy("Date","Desc")->get();
         
         $output = [];
         foreach ($rows as $row) {
+            /*
             $row["certificates"] = Certificate::where("DateID", $row->DateID)->get();
             $row["recipes"] = Recipe::where("DateID", $row->DateID)->get();
             $row["interviews"] = Interview::where("DateID", $row->DateID)->get();
@@ -128,7 +138,7 @@ class PeopleController extends Controller
                 $ap->save();
             }
             $row["anthropometry"] = $ap;
-            
+            */
             $output[] = $row;
         }
         return response()->json($output);

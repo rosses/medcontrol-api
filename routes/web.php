@@ -173,6 +173,16 @@ Route::group([
         Route::get('/next', 'DateController@next');
         Route::post('/confirm', 'DateController@confirm');
         Route::post('/{id}', 'DateController@saveSession');
+        Route::get('/{id}', 'DateController@getSession');
+    });
+
+    /* Template */
+    Route::group([
+        'prefix' => 'template',
+        'middleware' => 'auth'
+    ], function($router) {
+        Route::get('/{surgeryID}', 'TemplateController@show');
+        Route::post('/{surgeryID}', 'TemplateController@update');
     });
 
     /* Auth */

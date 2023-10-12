@@ -13,7 +13,9 @@ class CreateIndexesForRelation2 extends Migration
      */
     public function up()
     {
-        Schema::table('Anthropometrys', function(Blueprint $table) { $table->index('DateID'); });
+        Schema::table('Dates', function(Blueprint $table) { 
+            $table->text('AntMedical')->after('Confirmed')->nullable();
+        });
     }
 
     /**
@@ -23,6 +25,8 @@ class CreateIndexesForRelation2 extends Migration
      */
     public function down()
     {
-        Schema::table('Evolutions', function (Blueprint $table) { $table->dropIndex(['DateID']); });
+        Schema::table('Dates', function (Blueprint $table) { 
+            $table->dropColumn('AntMedical');
+        });
     }
 }
