@@ -100,6 +100,8 @@ Route::group([
     ], function($router) {
         Route::get('/', 'ExamDataController@index');
         Route::get('/{id}', 'ExamDataController@show');
+        Route::post('/save', 'ExamDataController@saveResults');
+        Route::post('/get/{DateID}/{ExamTypeID}', 'ExamDataController@getExamValues');
         Route::post('/', 'ExamDataController@create');
         Route::post('/{id}', 'ExamDataController@update');
         Route::delete('/{id}', 'ExamDataController@delete');
