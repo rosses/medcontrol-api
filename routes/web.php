@@ -101,7 +101,7 @@ Route::group([
         Route::get('/', 'ExamDataController@index');
         Route::get('/{id}', 'ExamDataController@show');
         Route::post('/save', 'ExamDataController@saveResults');
-        Route::post('/get/{DateID}/{ExamTypeID}', 'ExamDataController@getExamValues');
+        Route::get('/get-by-date/{DateID}', 'ExamDataController@getExamValuesByDate');
         Route::post('/', 'ExamDataController@create');
         Route::post('/{id}', 'ExamDataController@update');
         Route::delete('/{id}', 'ExamDataController@delete');
