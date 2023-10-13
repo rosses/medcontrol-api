@@ -8,6 +8,7 @@ use App\Models\Date;
 use App\Models\Evolution;
 use App\Models\Interview;
 use App\Models\People;
+use App\Models\Exam;
 use App\Models\Order;
 use App\Models\Recipe;
 use Illuminate\Http\Request;
@@ -94,10 +95,14 @@ class PeopleController extends Controller
     public function show($id) {
         $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName')
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
-                ->join('Healths','Healths.HealthID','=','Peoples.HealthID')
+                ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
                 ->where("PeopleID",$id)
                 ->first();
-        return response()->json($rows); 
+
+        $people = json_decode(json_encode(($rows)),true);
+        $people["Anthropometry"] = Anthropometry::where("PeopleID", $id)->orderBy("AnthropometryID","DESC")->first();
+        $people["Date"] = Date::where("PeopleID", $id)->orderBy("DateID","DESC")->first();
+        return response()->json($people); 
     }
     public function datesForPeople($id) {
         $rows = Date::select(
@@ -143,6 +148,16 @@ class PeopleController extends Controller
         }
         return response()->json($output);
     }
+    public function examsForPeople($id) {
+        $rows = Order::select('*')
+                //->join('ExamTypes', 'Exams.ExamTypeID', '=', 'ExamTypes.ExamTypeID')
+                //->where('Exams.Active',1)
+                ->where('PeopleID', $id)
+                ->orderBy('OrderID','ASC')
+                ->get();
+        return response()->json($rows);
+    }
+
     public function update($id, Request $request) {
         $row = People::findOrFail($id);
         $row->update($request->all());

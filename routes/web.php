@@ -159,6 +159,7 @@ Route::group([
     ], function($router) {
         Route::get('/', 'PeopleController@index');
         Route::get('/{id}/dates', 'PeopleController@datesForPeople');
+        Route::get('/{id}/exams', 'PeopleController@examsForPeople');
         Route::get('/{id}', 'PeopleController@show');
         Route::post('/', 'PeopleController@create');
         Route::post('/{id}', 'PeopleController@update');
