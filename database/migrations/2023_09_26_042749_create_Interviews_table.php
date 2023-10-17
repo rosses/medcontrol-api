@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('PeopleID')->nullable();
             $table->integer('DateID')->nullable();
             $table->integer('CreatedUserID')->nullable();
-            $table->integer('CreatedAt')->nullable();
+            $table->dateTime('CreatedAt')->nullable();
 
             $table->primary(['InterviewID'], 'PK_Interviews');
         });

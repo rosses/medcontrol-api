@@ -224,6 +224,15 @@ class PeopleController extends Controller
 
         return response()->json($output);
     }
+    public function evolutionsForPeople($id) {
+        $evolutions =  Evolution::select("Evolutions.*", "Users.Name as CreatedByName")
+                            ->join("Users","Users.UserID","=","Evolutions.CreatedUserID")
+                            ->where("Evolutions.PeopleID", $id)
+                            ->get();
+                            
+        return response()->json($evolutions);
+    }
+    
     public function update($id, Request $request) {
         $row = People::find($id);
         $row->Birthday = $request->Birthday;

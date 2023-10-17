@@ -162,6 +162,7 @@ Route::group([
         Route::get('/', 'PeopleController@index');
         Route::get('/{id}/dates', 'PeopleController@datesForPeople');
         Route::get('/{id}/exams', 'PeopleController@examsForPeople');
+        Route::get('/{id}/evolutions', 'PeopleController@evolutionsForPeople');
         Route::get('/{id}', 'PeopleController@show');
         Route::post('/', 'PeopleController@create');
         Route::post('/{id}', 'PeopleController@update');
@@ -188,6 +189,15 @@ Route::group([
         Route::post('/{surgeryID}', 'TemplateController@update');
     });
 
+    /* Masterdata Surgery endpoints */
+    Route::group([
+        'prefix' => 'evolution',
+        'middleware' => 'auth'
+    ], function($router) { 
+        Route::post('/', 'EvolutionController@create'); 
+        Route::delete('/{id}', 'EvolutionController@delete');
+    });
+
     /* Auth */
     Route::group([
         'prefix' => 'auth'
@@ -196,6 +206,12 @@ Route::group([
         Route::post('logout', 'AuthController@logout');
         Route::post('refresh', 'AuthController@refresh');
         Route::get('me', 'AuthController@me');
+    });
+
+    Route::group([
+        'prefix' => 'pdf-render'
+    ], function ($router) {
+        Route::get('data-orders/{id}', 'PdfController@getDataOrders');
     });
 });
 
