@@ -154,6 +154,13 @@ Route::group([
         Route::delete('/{id}', 'GroupController@delete');
     });
 
+    Route::group([
+        'prefix' => 'status',
+        'middleware' => 'auth'
+    ], function($router) {
+        Route::get('/', 'StatusController@index');
+    });
+
     /* People */
     Route::group([
         'prefix' => 'people',
@@ -175,6 +182,7 @@ Route::group([
         'middleware' => 'auth'
     ], function($router) {
         Route::get('/next', 'DateController@next');
+        Route::get('/find', 'DateController@find');
         Route::post('/confirm', 'DateController@confirm');
         Route::post('/{id}', 'DateController@saveSession');
         Route::get('/{id}', 'DateController@getSession');

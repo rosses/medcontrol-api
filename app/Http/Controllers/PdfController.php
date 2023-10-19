@@ -86,7 +86,7 @@ class PdfController extends Controller
             <img src="firmasalinas.png" width="180" />
             </div>
             <div style="text-align:left; font-size:11px;">
-                impreso el '.date("d/m/Y").' a las '.date("H:i:s").'<br />
+                Fecha, '.date("d/m/Y").'<br />
                 Centro de Cirugía Digestiva y Obesidad Clínica Puerto Varas<br />
                 www.drsalinas.cl
             </div>
@@ -151,7 +151,6 @@ class PdfController extends Controller
                         <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
                         Cirugía Digestiva<br />P. Universidad Católica de Chile</h4>
                         <br />
-                        <br />
                         Bypass gástrico, gastrectomía en manga<br />
                         Reflujo gastroesofágico, hernias vía laparoscópica<br />
                         Oncología tracto gastrointesnal
@@ -165,8 +164,9 @@ class PdfController extends Controller
                 <hr />
                 Nombre: <br />
                 Rut: <br />
-                Diagnóstico: <br /><br />
+                Diagnóstico: <br />
                 <h4>Rp</h4>
+                <b>'.$datas["ExamTypeName"].'</b>
                 ';
 
                 foreach ($datas["Exams"] as $exm) {

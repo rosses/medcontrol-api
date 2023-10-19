@@ -26,6 +26,17 @@ class DateController extends Controller
                 ->get();
         return response()->json($rows);
     }
+    public function find(Request $request) {
+        $rows = Date::select('Dates.*', 'Peoples.CardCode', 'Peoples.Name', 'Peoples.Lastname', 'Peoples.Lastname2', 'Groups.Name as GroupName')
+                ->join('Peoples', 'Peoples.PeopleID','=','Dates.PeopleID')
+                ->join('Groups', 'Groups.GroupID','=','Peoples.GroupID')
+                ->where('Date', '>=', $request->from)
+                ->where('Date', '<=', $request->to)
+                ->orderBy('Dates.Date','ASC')
+                ->orderBy('Dates.Time','ASC')
+                ->get();
+        return response()->json($rows);
+    }
     public function confirm(Request $request) {
 
         try {

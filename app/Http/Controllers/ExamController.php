@@ -8,7 +8,7 @@ class ExamController extends Controller
 {
     public function index() {
         $rows = Exam::select('Exams.*','ExamTypes.Name as ExamTypeName')
-                ->join('ExamTypes', 'Exams.ExamTypeID', '=', 'ExamTypes.ExamTypeID')
+                ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
                 ->where('Exams.Active',1)
                 ->orderBy('Exams.Name','ASC')
                 ->get();
