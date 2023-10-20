@@ -30,7 +30,7 @@ class PdfController extends Controller
             'Peoples.CardCode as PeopleCardCode'
         )
         ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
-        ->leftJoin('Peoples', 'Peoples.PeopleID', '=', 'Peoples.PeopleID')
+        ->leftJoin('Peoples', 'Peoples.PeopleID', '=', 'Dates.PeopleID')
         ->leftJoin('Diagnosis', 'Diagnosis.DiagnosisID', '=', 'Dates.DiagnosisID')
         ->where("Orders.DateID",$id)
         ->groupBy(
