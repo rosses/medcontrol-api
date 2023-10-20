@@ -54,7 +54,11 @@ class PdfController extends Controller
                 'Dates.Time',
                 'Exams.ExamTypeID',
                 'Exams.Name',
-                'ExamTypes.Name'
+                'ExamTypes.Name',
+                'Peoples.Name',
+                'Peoples.Lastname',
+                'Diagnosis.Name',
+                'Peoples.CardCode'
             )
             ->get();
 
