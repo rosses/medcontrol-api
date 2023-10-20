@@ -188,11 +188,11 @@ class PdfController extends Controller
                 Rut: '.$dates["CardCode"].'<br />
                 Diagnóstico: '.$dates["Diagnosis"].'<br />
                 <h4>Rp</h4>
-                <b>'.$datas["ExamTypeName"].'</b><br />
+                <b>'.$datas["ExamTypeName"].'</b><br><br>
                 ';
 
                 foreach ($datas["Exams"] as $exm) {
-                    $content .= "- ".$exm."<br><br>";
+                    $content .= "- ".$exm."<br>";
                 }
                 $content .= '<br /><br /></page>';   
             }
