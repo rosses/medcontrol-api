@@ -24,8 +24,14 @@ class PdfController extends Controller
             'Orders.DateID',
             'Dates.Date as Date',
             'Dates.Time as Time',
+            'Peoples.Name as PeopleName',
+            'Peoples.Lastname as PeopleLastname',
+            'Diagnosis.Name as DiagnosisName',
+            'Peoples.CardCode as PeopleCardCode'
         )
         ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
+        ->leftJoin('Peoples', 'Peoples.PeopleID', '=', 'Peoples.PeopleID')
+        ->leftJoin('Diagnosis', 'Diagnosis.DiagnosisID', '=', 'Dates.DiagnosisID')
         ->where("Orders.DateID",$id)
         ->groupBy("Orders.DateID","Dates.Date","Dates.Time")
         ->orderBy("Orders.DateID","DESC")
@@ -69,13 +75,22 @@ class PdfController extends Controller
             if (count($acc)>0) {
                 $rows[] = $acc;
             }
-
-            $output[] = [
+            $opt = [
                 "DateID" => $pack->DateID,
                 "Date" => $pack->Date,
                 "Time" => $pack->Time,
-                "data" => $rows
+                "data" => $rows,
+                "Name" => "",
+                "Diagnosis" => "",
+                "CardCode" => $pack->PeopleCardCode
             ];
+            if ($pack->PeopleName != "" && $pack->PeopleLastname != "") {
+                $opt["Name"] = $pack->PeopleName." ".$pack->PeopleLastname;
+            }
+            if ($pack->DiagnosisName != "") {
+                $opt["Diagnosis"] = $pack->DiagnosisName;
+            }
+            $output[] = $opt;
             
         } 
 
@@ -162,11 +177,11 @@ class PdfController extends Controller
                 </tr>
                 </table>
                 <hr />
-                Nombre: <br />
-                Rut: <br />
-                Diagnóstico: <br />
+                Nombre: '.$datas["Name"].'<br />
+                Rut: '.$datas["CardCode"].'<br />
+                Diagnóstico: '.$datas["Diagnosis"].'<br />
                 <h4>Rp</h4>
-                <b>'.$datas["ExamTypeName"].'</b>
+                <b>'.$datas["ExamTypeName"].'</b><br />
                 ';
 
                 foreach ($datas["Exams"] as $exm) {
