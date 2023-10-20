@@ -33,7 +33,14 @@ class PdfController extends Controller
         ->leftJoin('Peoples', 'Peoples.PeopleID', '=', 'Peoples.PeopleID')
         ->leftJoin('Diagnosis', 'Diagnosis.DiagnosisID', '=', 'Dates.DiagnosisID')
         ->where("Orders.DateID",$id)
-        ->groupBy("Orders.DateID","Dates.Date","Dates.Time")
+        ->groupBy(
+            "Orders.DateID",
+            "Dates.Date","Dates.Time",
+            'Peoples.Name',
+            'Peoples.Lastname',
+            'Diagnosis.Name',
+            'Peoples.CardCode'
+        )
         ->orderBy("Orders.DateID","DESC")
         ->get();
         foreach ($packs as $pack) {
@@ -54,11 +61,7 @@ class PdfController extends Controller
                 'Dates.Time',
                 'Exams.ExamTypeID',
                 'Exams.Name',
-                'ExamTypes.Name',
-                'Peoples.Name',
-                'Peoples.Lastname',
-                'Diagnosis.Name',
-                'Peoples.CardCode'
+                'ExamTypes.Name'
             )
             ->get();
 
