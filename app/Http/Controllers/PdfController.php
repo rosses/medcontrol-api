@@ -184,9 +184,9 @@ class PdfController extends Controller
                 </tr>
                 </table>
                 <hr />
-                Nombre: '.$datas["Name"].'<br />
-                Rut: '.$datas["CardCode"].'<br />
-                Diagnóstico: '.$datas["Diagnosis"].'<br />
+                Nombre: '.$dates["Name"].'<br />
+                Rut: '.$dates["CardCode"].'<br />
+                Diagnóstico: '.$dates["Diagnosis"].'<br />
                 <h4>Rp</h4>
                 <b>'.$datas["ExamTypeName"].'</b><br />
                 ';
