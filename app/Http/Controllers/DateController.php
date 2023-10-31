@@ -17,9 +17,10 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 class DateController extends Controller
 {
     public function next() {
-        $rows = Date::select('Dates.*', 'Peoples.CardCode', 'Peoples.Name', 'Peoples.Lastname', 'Peoples.Lastname2', 'Groups.Name as GroupName')
+        $rows = Date::select('Dates.*', 'Peoples.CardCode', 'Peoples.Name', 'Peoples.Lastname', 'Peoples.Lastname2', 'Groups.Name as GroupName','Status.Name as StatusName')
                 ->join('Peoples', 'Peoples.PeopleID','=','Dates.PeopleID')
                 ->join('Groups', 'Groups.GroupID','=','Peoples.GroupID')
+                ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID')
                 ->where('Date', '>=', date("Y-m-d"))
                 ->orderBy('Dates.Date','ASC')
                 ->orderBy('Dates.Time','ASC')
@@ -27,9 +28,10 @@ class DateController extends Controller
         return response()->json($rows);
     }
     public function find(Request $request) {
-        $rows = Date::select('Dates.*', 'Peoples.CardCode', 'Peoples.Name', 'Peoples.Lastname', 'Peoples.Lastname2', 'Groups.Name as GroupName')
+        $rows = Date::select('Dates.*', 'Peoples.CardCode', 'Peoples.Name', 'Peoples.Lastname', 'Peoples.Lastname2', 'Groups.Name as GroupName','Status.Name as StatusName')
                 ->join('Peoples', 'Peoples.PeopleID','=','Dates.PeopleID')
                 ->join('Groups', 'Groups.GroupID','=','Peoples.GroupID')
+                ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID')
                 ->where('Date', '>=', $request->from)
                 ->where('Date', '<=', $request->to)
                 ->orderBy('Dates.Date','ASC')

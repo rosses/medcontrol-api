@@ -22,9 +22,10 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 class PeopleController extends Controller
 {
     public function index() {
-        $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName')
+        $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
                 ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
+                ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID')
                 ->orderBy('Peoples.Name','ASC')
                 ->get();
         return response()->json($rows);
@@ -70,7 +71,8 @@ class PeopleController extends Controller
                 $row->UpdatedAt = date("Y-m-d H:i:s");
                 $row->save();
             } else {
-                $row = $found[0];
+                throw new \Exception("RUT ya existe");
+                //$row = $found[0];
             }
 
             if ($request->Mode == "fast") {
@@ -110,9 +112,10 @@ class PeopleController extends Controller
        
     }
     public function show($id) {
-        $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName')
+        $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
                 ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
+                ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID')
                 ->where("PeopleID",$id)
                 ->first();
 
