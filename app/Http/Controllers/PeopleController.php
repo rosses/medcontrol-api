@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Anthropometry;
 use App\Models\Certificate;
 use App\Models\Date;
+use App\Models\Diagnosis;
 use App\Models\Evolution;
 use App\Models\Interview;
 use App\Models\People;
 use App\Models\Exam;
+use App\Models\ExamData;
 use App\Models\Order;
 use App\Models\Recipe;
 use App\Models\Surgery;
@@ -20,8 +22,9 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 class PeopleController extends Controller
 {
     public function index() {
-        $rows = People::select('Peoples.*','Groups.Name as GroupName')
+        $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName')
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
+                ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
                 ->orderBy('Peoples.Name','ASC')
                 ->get();
         return response()->json($rows);
@@ -33,7 +36,8 @@ class PeopleController extends Controller
             if ($request->Name=="") { throw new \Exception("Nombre es requerido"); }
             if ($request->Lastname=="") { throw new \Exception("Apellido es requerido"); }
 
-            $CC = str_replace(".","",$request->CardCode);
+            $CC = str_replace([".",","],["",""],$request->CardCode);
+            $CC = substr($CC,0,-1 ).'-'.substr($CC,strlen($CC)-1,1);
             // Modo?
             if ($request->Mode == "fast") {
                 if (strlen($request->dates["date"]) < 10 || strlen($request->dates["time"])<5) {
@@ -50,6 +54,7 @@ class PeopleController extends Controller
                 $row->Lastname2 = mb_strtoupper(($request->Lastname2 ? $request->Lastname2 : ''),'utf-8');
                 $row->Email = ($request->Email ? $request->Email : '');
                 $row->Phone = ($request->Phone ? $request->Phone : '');
+                $row->Phone2 = ($request->Phone ? $request->Phone2 : '');
                 $row->Address = ($request->Address ? $request->Address : '');
                 $row->Birthday = ($request->Birthday ? $request->Birthday : null);
                 $row->Address = mb_strtoupper(($request->Address ? $request->Address : ''),'utf-8');
@@ -79,10 +84,22 @@ class PeopleController extends Controller
                 $date->UpdatedUserID = JWTAuth::user()->UserID;
                 $date->UpdatedAt = date("Y-m-d H:i:s");
                 $date->save();
+            } else if ($request->Mode == "full") {
+                $date = new Date();
+                $date->PeopleID = $row->PeopleID;
+                $date->Date = date("Y-m-d");
+                $date->Time = date("H:i:s");
+                $date->CreatedGroupID = $row->GroupID;
+                $date->CreatedUserID = JWTAuth::user()->UserID;
+                $date->CreatedAt = date("Y-m-d H:i:s");
+                $date->UpdatedUserID = JWTAuth::user()->UserID;
+                $date->UpdatedAt = date("Y-m-d H:i:s");
+                $date->save();
             }
 
             return response()->json([
-                "success" => true 
+                "success" => true,
+                "data" => $row
             ], 200);
 
         } catch (\Exception $e) {
@@ -237,7 +254,9 @@ class PeopleController extends Controller
         $row = People::find($id);
         $row->Birthday = $request->Birthday;
         $row->HealthID = $request->HealthID;
-        $row->CardCode = $request->CardCode;
+        $CC = str_replace([".",","],["",""],$request->CardCode);
+        $CC = substr($CC,0,-1 ).'-'.substr($CC,strlen($CC)-1,1);
+        $row->CardCode = $CC;
         $row->Name = $request->Name;
         $row->Lastname = $request->Lastname;
         $row->Lastname2 = $request->Lastname2;
@@ -252,5 +271,26 @@ class PeopleController extends Controller
         $row->Obs = $request->Obs;
         $row->save();
         return response()->json($row, 200);
+    }
+    public function delete($id) {
+        try {
+            $row = People::find($id);
+            if ($row) {
+                $row->delete();
+            }
+            Date::where("PeopleID",$id)->delete();
+            Anthropometry::where("PeopleID",$id)->delete();
+            Evolution::where("PeopleID",$id)->delete(); 
+            Certificate::where("PeopleID",$id)->delete();
+            Interview::where("PeopleID",$id)->delete();
+            Order::where("PeopleID",$id)->delete();
+            Recipe::where("PeopleID",$id)->delete();
+
+            return response()->json($row, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 400);
+        }
     }
 }

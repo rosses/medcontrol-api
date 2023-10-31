@@ -109,6 +109,25 @@ class DateController extends Controller
                 $output["anthropometry"] = $ap;
                 
             }
+
+            $output["anthropometry"]["Weight"] = ( 
+                floatval($output["anthropometry"]["Weight"]) == intval($output["anthropometry"]["Weight"]) ? 
+                intval($output["anthropometry"]["Weight"]) : 
+                round($output["anthropometry"]["Weight"] * 100) / 100
+            );
+
+            $output["anthropometry"]["Height"] = ( 
+                floatval($output["anthropometry"]["Height"]) == intval($output["anthropometry"]["Height"]) ? 
+                intval($output["anthropometry"]["Height"]) : 
+                round($output["anthropometry"]["Height"] * 100) / 100
+            );
+
+            $output["anthropometry"]["Temperature"] = ( 
+                floatval($output["anthropometry"]["Temperature"]) == intval($output["anthropometry"]["Temperature"]) ? 
+                intval($output["anthropometry"]["Temperature"]) : 
+                round($output["anthropometry"]["Temperature"] * 100) / 100
+            );         
+
             return response()->json($output);
 
 
