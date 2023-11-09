@@ -21,13 +21,26 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class PeopleController extends Controller
 {
-    public function index() {
+    public function index(Request $request) {
         $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
                 ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
-                ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID')
-                ->orderBy('Peoples.Name','ASC')
-                ->get();
+                ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID');
+        
+                if ($request->Search!="") {
+                    $rows = $rows->where(function ($query) use ($request) {
+                        $query->where("Peoples.Name","like","%".$request->Search."%")
+                            ->orWhere("Peoples.Lastname","like","%".$request->Search."%");
+                    });
+                }
+                if ($request->StatusID!="") {
+                    $rows = $rows->where("Peoples.StatusID", $request->StatusID);
+                }
+                if ($request->HealthID!="") {
+                    $rows = $rows->where("Peoples.HealthID", $request->StatusID);
+                }        
+        
+        $rows = $rows->orderBy('Peoples.Name','ASC')->get();
         return response()->json($rows);
     }
     public function create(Request $request) {
