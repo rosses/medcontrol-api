@@ -47,13 +47,13 @@ class PeopleController extends Controller
 
         try {
             if ($request->CardCode=="") { throw new \Exception("RUT es requerido"); }
-            if ($request->Name=="") { throw new \Exception("Nombre es requerido"); }
-            if ($request->Lastname=="") { throw new \Exception("Apellido es requerido"); }
+            if ($request->Name=="" && $request->Mode!="newdate") { throw new \Exception("Nombre es requerido"); }
+            if ($request->Lastname=="" && $request->Mode!="newdate") { throw new \Exception("Apellido es requerido"); }
 
             $CC = str_replace([".",",","-"],["","",""],$request->CardCode);
             $CC = substr($CC,0,-1 ).'-'.substr($CC,strlen($CC)-1,1);
             // Modo?
-            if ($request->Mode == "fast") {
+            if ($request->Mode == "fast" || $request->Mode == "newdate") {
                 if (strlen($request->dates["date"]) < 10 || strlen($request->dates["time"])<5) {
                     throw new \Exception("Fecha y hora son requeridos");
                 }
@@ -83,11 +83,13 @@ class PeopleController extends Controller
                 $row->UpdatedUserID = JWTAuth::user()->UserID;
                 $row->UpdatedAt = date("Y-m-d H:i:s");
                 $row->save();
-            } else {
+            } else if ($request->Mode!="newdate") {
                 throw new \Exception("RUT ya existe");
                 //$row = $found[0];
+            } else if ($request->Mode=="newdate") {
+                $row = $found[0];
             }
-
+            $date = new Date();
             if ($request->Mode == "fast") {
                 $date = new Date();
                 $date->PeopleID = $row->PeopleID;
@@ -110,11 +112,23 @@ class PeopleController extends Controller
                 $date->UpdatedUserID = JWTAuth::user()->UserID;
                 $date->UpdatedAt = date("Y-m-d H:i:s");
                 $date->save();
+            } else if ($request->Mode == "newdate") {
+                $date = new Date();
+                $date->PeopleID = $row->PeopleID;
+                $date->Date = $request->dates["date"];
+                $date->Time = $request->dates["time"];
+                $date->CreatedGroupID = $row->GroupID;
+                $date->CreatedUserID = JWTAuth::user()->UserID;
+                $date->CreatedAt = date("Y-m-d H:i:s");
+                $date->UpdatedUserID = JWTAuth::user()->UserID;
+                $date->UpdatedAt = date("Y-m-d H:i:s");
+                $date->save();
             }
 
             return response()->json([
                 "success" => true,
-                "data" => $row
+                "data" => $row,
+                "date" => $date
             ], 200);
 
         } catch (\Exception $e) {
@@ -415,6 +429,8 @@ class PeopleController extends Controller
         $row->Phone2 = $request->Phone2;
         $row->Profession = $request->Profession;
         $row->Obs = $request->Obs;
+        $row->BudgetPlace = $request->BudgetPlace;
+        $row->BudgetStatus = $request->BudgetStatus;
         $row->save();
         return response()->json($row, 200);
     }

@@ -291,6 +291,11 @@ class DateController extends Controller
                 }
             }
 
+            if (is_array($request->orders) && count($request->orders) > 0) {
+                //$people = People::find($request->orders);
+                //$people 
+            }
+
             return response()->json([
                 "success" => true,
                 "orders" => $orders,
