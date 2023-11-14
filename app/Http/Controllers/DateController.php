@@ -6,6 +6,7 @@ use App\Models\Date;
 use App\Models\Anthropometry;
 use App\Models\Certificate;
 use App\Models\Evolution;
+use App\Models\ExamType;
 use App\Models\Interview;
 use App\Models\People;
 use App\Models\Order;
@@ -183,6 +184,8 @@ class DateController extends Controller
                 $ant->PeopleID = $date->PeopleID;
                 $ant->save();
             }
+
+            $recipes = [];
             if ($request->recipes && is_array($request->recipes)) {
                 foreach ($request->recipes as $r) {
                     $recipe = new Recipe();
@@ -195,12 +198,16 @@ class DateController extends Controller
                     $recipe->MedicineID = $r["MedicineID"];
                     $recipe->Dose = $r["Dose"];
                     $recipe->Period = $r["Period"];
+                    $recipe->Periodicity = $r["Periodicity"];
                     $recipe->DateID = $date->DateID;
                     $recipe->PeopleID = $date->PeopleID;
                     $recipe->save();
+                    $cc = json_decode(json_encode($recipe), true);
+                    $recipes[] = $cc;
                 }
             }
 
+            $interviews = [];
             if ($request->interviews && is_array($request->interviews)) {
                 foreach ($request->interviews as $r) {
                     $interview = new Interview();
@@ -217,9 +224,12 @@ class DateController extends Controller
                     $interview->DateID = $date->DateID;
                     $interview->PeopleID = $date->PeopleID;
                     $interview->save();
+                    $cc = json_decode(json_encode($interview), true);
+                    $interviews[] = $cc;
                 }
             }
 
+            $certificates = [];
             if ($request->certificates && is_array($request->certificates)) {
                 foreach ($request->certificates as $r) {
                     $certificate = new Certificate();
@@ -234,9 +244,12 @@ class DateController extends Controller
                     $certificate->DateID = $date->DateID;
                     $certificate->PeopleID = $date->PeopleID;
                     $certificate->save();
+                    $cc = json_decode(json_encode($certificate), true);
+                    $certificates[] = $cc;
                 }
             }
 
+            $orders = [];
             if ($request->orders && is_array($request->orders)) {
                 foreach ($request->orders as $r) {
                     $order = new Order();
@@ -245,19 +258,46 @@ class DateController extends Controller
                     } else {
                         $order->CreatedUserID = JWTAuth::user()->UserID;
                         $order->CreatedAt = date("Y-m-d H:i:s");
-                    }
-                    //$order->ExamTypeID = $r["ExamTypeID"];
+                    } 
                     $order->ExamID = $r["ExamID"];
                     $order->Description = $r["Description"];
                     $order->DateID = $date->DateID;
                     $order->PeopleID = $date->PeopleID;
                     $order->save();
+                    $cc = json_decode(json_encode($order), true);
+                    $cc["ExamTypeID"] = $r["ExamTypeID"];
+                    $orders[] = $cc;
                 }
-                
             } 
 
+            if ($request->dropOrders && is_array($request->dropOrders)) {
+                foreach ($request->dropOrders as $drop) {
+                    Order::find($drop)->delete();
+                }
+            }
+            if ($request->dropCertificates && is_array($request->dropCertificates)) {
+                foreach ($request->dropCertificates as $drop) {
+                    Certificate::find($drop)->delete();
+                }
+            }
+            if ($request->dropInterviews && is_array($request->dropInterviews)) {
+                foreach ($request->dropInterviews as $drop) {
+                    Order::find($drop)->delete();
+                }
+            }
+            if ($request->dropRecipes && is_array($request->dropRecipes)) {
+                foreach ($request->dropRecipes as $drop) {
+                    Recipe::find($drop)->delete();
+                }
+            }
+
             return response()->json([
-                "success" => true 
+                "success" => true,
+                "orders" => $orders,
+                "interviews" => $interviews,
+                "recipes" => $recipes,
+                "certificates" => $certificates,
+                "ant" => $ant
             ], 200);
 
         } catch (\Exception $e) {

@@ -69,6 +69,7 @@ class ExamDataController extends Controller
         $row = ExamData::findOrFail($id);
         $row->Name = $request->Name;
         $row->ExamID = $request->ExamID;
+        $row->ExamDataType = $request->ExamDataType;
         $row->save();
         return response()->json($row, 200);
     }

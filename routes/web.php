@@ -169,6 +169,8 @@ Route::group([
         Route::get('/', 'PeopleController@index');
         Route::get('/{id}/dates', 'PeopleController@datesForPeople');
         Route::get('/{id}/exams', 'PeopleController@examsForPeople');
+        Route::get('/{id}/recipes', 'PeopleController@recipesForPeople');
+        Route::get('/{id}/certificates', 'PeopleController@certificatesForPeople');
         Route::get('/{id}/evolutions', 'PeopleController@evolutionsForPeople');
         Route::get('/{id}', 'PeopleController@show');
         Route::post('/', 'PeopleController@create');

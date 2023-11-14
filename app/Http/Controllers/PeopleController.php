@@ -37,7 +37,7 @@ class PeopleController extends Controller
                     $rows = $rows->where("Peoples.StatusID", $request->StatusID);
                 }
                 if ($request->HealthID!="") {
-                    $rows = $rows->where("Peoples.HealthID", $request->StatusID);
+                    $rows = $rows->where("Peoples.HealthID", $request->HealthID);
                 }        
         
         $rows = $rows->orderBy('Peoples.Name','ASC')->get();
@@ -50,7 +50,7 @@ class PeopleController extends Controller
             if ($request->Name=="") { throw new \Exception("Nombre es requerido"); }
             if ($request->Lastname=="") { throw new \Exception("Apellido es requerido"); }
 
-            $CC = str_replace([".",","],["",""],$request->CardCode);
+            $CC = str_replace([".",",","-"],["","",""],$request->CardCode);
             $CC = substr($CC,0,-1 ).'-'.substr($CC,strlen($CC)-1,1);
             // Modo?
             if ($request->Mode == "fast") {
@@ -265,12 +265,142 @@ class PeopleController extends Controller
                             
         return response()->json($evolutions);
     }
+    public function recipesForPeople($id) {
+
+        $output = [];
+        $packs = Order::select(
+                        'Orders.DateID',
+                        'Dates.Date as Date',
+                        'Dates.Time as Time',
+                    )
+                    ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
+                    ->where("Orders.PeopleID",$id)
+                    ->groupBy("Orders.DateID","Dates.Date","Dates.Time")
+                    ->orderBy("Orders.DateID","DESC")
+                    ->get();
+        foreach ($packs as $pack) {
+            $exams = Order::select(
+                'Dates.Date as Date',
+                'Dates.Time as Time',
+                'Exams.ExamTypeID',
+                'Exams.Name as ExamName',
+                'ExamTypes.Name as ExamTypeName'
+            )
+            ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
+            ->join('Exams', 'Exams.ExamID', '=', 'Orders.ExamID')
+            ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
+            //->where('Exams.Active',1)
+            ->where('Orders.PeopleID', $id)
+            ->orderBy('ExamTypes.Name','ASC')
+            ->groupBy(
+                'Dates.Date',
+                'Dates.Time',
+                'Exams.ExamTypeID',
+                'Exams.Name',
+                'ExamTypes.Name'
+            )
+            ->get();
+
+            $rows  = [];
+            $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
+            $lastExamTypeID = "";
+            foreach ($exams as $ex) {
+                if ($lastExamTypeID!="" && $ex->ExamTypeID != $lastExamTypeID) {
+                    $rows[] = $acc;
+                    $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
+                }
+                $acc["ExamTypeID"] = $ex->ExamTypeID;
+                $acc["ExamTypeName"] = $ex->ExamTypeName;
+                $acc["Exams"][] = $ex->ExamName;
+
+                $lastExamTypeID = $ex->ExamTypeID;
+            }
+            if (count($acc)>0) {
+                $rows[] = $acc;
+            }
+
+            $output[] = [
+                "DateID" => $pack->DateID,
+                "Date" => $pack->Date,
+                "Time" => $pack->Time,
+                "data" => $rows
+            ];
+        } 
+
+
+        return response()->json($output);
+    }
+    public function certificatesForPeople($id) {
+ 
+        $output = [];
+        $packs = Order::select(
+                        'Orders.DateID',
+                        'Dates.Date as Date',
+                        'Dates.Time as Time',
+                    )
+                    ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
+                    ->where("Orders.PeopleID",$id)
+                    ->groupBy("Orders.DateID","Dates.Date","Dates.Time")
+                    ->orderBy("Orders.DateID","DESC")
+                    ->get();
+        foreach ($packs as $pack) {
+            $exams = Order::select(
+                'Dates.Date as Date',
+                'Dates.Time as Time',
+                'Exams.ExamTypeID',
+                'Exams.Name as ExamName',
+                'ExamTypes.Name as ExamTypeName'
+            )
+            ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
+            ->join('Exams', 'Exams.ExamID', '=', 'Orders.ExamID')
+            ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
+            //->where('Exams.Active',1)
+            ->where('Orders.PeopleID', $id)
+            ->orderBy('ExamTypes.Name','ASC')
+            ->groupBy(
+                'Dates.Date',
+                'Dates.Time',
+                'Exams.ExamTypeID',
+                'Exams.Name',
+                'ExamTypes.Name'
+            )
+            ->get();
+
+            $rows  = [];
+            $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
+            $lastExamTypeID = "";
+            foreach ($exams as $ex) {
+                if ($lastExamTypeID!="" && $ex->ExamTypeID != $lastExamTypeID) {
+                    $rows[] = $acc;
+                    $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
+                }
+                $acc["ExamTypeID"] = $ex->ExamTypeID;
+                $acc["ExamTypeName"] = $ex->ExamTypeName;
+                $acc["Exams"][] = $ex->ExamName;
+
+                $lastExamTypeID = $ex->ExamTypeID;
+            }
+            if (count($acc)>0) {
+                $rows[] = $acc;
+            }
+
+            $output[] = [
+                "DateID" => $pack->DateID,
+                "Date" => $pack->Date,
+                "Time" => $pack->Time,
+                "data" => $rows
+            ];
+        } 
+
+
+        return response()->json($output);
+    }
     
     public function update($id, Request $request) {
         $row = People::find($id);
         $row->Birthday = $request->Birthday;
         $row->HealthID = $request->HealthID;
-        $CC = str_replace([".",","],["",""],$request->CardCode);
+        $CC = str_replace([".",",","-"],["","",""],$request->CardCode);
         $CC = substr($CC,0,-1 ).'-'.substr($CC,strlen($CC)-1,1);
         $row->CardCode = $CC;
         $row->Name = $request->Name;
