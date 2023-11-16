@@ -118,6 +118,7 @@ class PdfController extends Controller
         <style type="text/css">
             <!-- 
             .single-table { padding: 3px; }
+            .width-740 { width: 740px; }
             .width-560 { width: 560px; }
             .width-550 { width: 550px; }
             .width-380 { width: 380px; }
@@ -212,5 +213,270 @@ class PdfController extends Controller
         //header("Content-Type: application/pdf");
         //readfile(public_path().'/uploads/'.$x["Comments"].'.pdf');
 
+    } 
+
+    public function getPeople($id) {
+        
+        $people = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')
+                ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
+                ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
+                ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID')
+                ->where("PeopleID", $id);    
+        
+        $people = $people->first();
+
+        $ant = Anthropometry::where("PeopleID", $id)->orderBy("AnthropometryID","DESC")->first();
+
+        $evolutions =  Evolution::select("Evolutions.*", "Users.Name as CreatedByName")
+                            ->join("Users","Users.UserID","=","Evolutions.CreatedUserID")
+                            ->where("Evolutions.PeopleID", $id)
+                            ->get();
+
+        $page_header = '<page_header></page_header>'; 
+        $page_footer = '<page_footer>
+            <div style="text-align:right;">
+            <img src="firmasalinas.png" width="180" />
+            </div>
+            <div style="text-align:left; font-size:11px;">
+                Fecha, '.date("d/m/Y").'<br />
+                Centro de Cirugía Digestiva y Obesidad Clínica Puerto Varas<br />
+                www.drsalinas.cl
+            </div>
+        </page_footer>';
+        $content = '
+        <style type="text/css">
+            <!-- 
+            .single-table { padding: 3px; }
+            .width-740 { width: 740px; }
+            .width-560 { width: 560px; }
+            .width-550 { width: 550px; }
+            .width-380 { width: 380px; }
+            .width-330 { width: 330px; }
+            .width-440 { width: 440px; }
+            .width-280 { width: 280px; }
+            .width-250 { width: 250px; }
+            .width-200 { width: 200px; }
+            .width-150 { width: 150px; }
+            .width-170 { width: 170px; }
+            .width-160 { width: 160px; }
+            .width-110 { width: 110px; }
+            .width-120 { width: 120px; }
+            .width-100 { width: 100px; }
+            .width-90 { width: 90px; }
+            .width-80 { width: 80px; }
+            .width-75 { width: 75px; }
+            .width-75 { width: 70px; }
+            .width-65 { width: 65px; }
+            .width-60 { width: 60px; }
+            .width-55 { width: 55px; }
+            .width-50 { width: 50px; }
+            .width-45 { width: 45px; }
+            .width-40 { width: 40px; }
+            .width-35 { width: 35px; }
+            .width-30 { width: 30px; }
+            .text-center { text-center:left; }
+            .text-left { text-align:left; }
+            .b { font-weight: bold; }
+            .cola {
+                border-collapse: collapse;
+            }
+            .cola td {
+                border:1px solid black;
+                font-size: 10px;
+                padding:3px;
+                height: 5px;
+                border-collapse: collapse;
+            }
+            --> 
+        </style>';
+
+        if ($people->Birthday=="") {
+            $people->Birthday = date("Y-m-d H:i:s");
+        }
+        $fecha_nac = new \DateTime(date('Y/m/d',strtotime($people->Birthday))); 
+        $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
+        $edad = date_diff($fecha_hoy,$fecha_nac); 
+        $imc = 0;
+
+        $edv = DB::select("
+        SELECT		E.ExamID,  ET.Name ExamTypeName, E.Name, ED.ExamDataType, ED.Name ExamDataName, EDV.Value 
+        FROM		Exams as E 
+        INNER JOIN	ExamTypes ET ON ET.ExamTypeID = E.ExamTypeID
+        INNER JOIN	ExamDatas ED ON ED.ExamID = E.ExamID 
+        INNER JOIN	ExamDataValues EDV ON EDV.ExamDataID = ED.ExamDataID 
+        INNER JOIN  Orders O ON O.PeopleID = '".$id."' AND O.OrderID = EDV.OrderID 
+        WHERE		E.Active = 1 
+        ORDER BY	ET.Name ASC, EDV.ExamDataValueID DESC
+        ");
+        $edv = json_decode(json_encode($edv), true);
+        $results = [];
+        foreach ($edv as $rr) {
+            if (!isset($results[$rr["ExamTypeName"]][$rr["ExamDataName"]])) { // Only newest result
+                if ($rr["ExamDataType"]=="boolean") {
+                    if ($rr["Value"]=="1") {
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "OK";
+                    }
+                    else {
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "NO-OK";
+                    }
+                }
+                else if ($rr["ExamDataType"]=="text") { 
+                    $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = $rr["Value"];
+                } 
+                else if ($rr["ExamDataType"]=="number") { 
+                    $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = round($rr["Value"],2);
+                }
+            }
+        }
+
+        $surgerys = Date::select(
+            "Dates.*",
+            "Surgerys.Name as SurgeryName",
+            "Diagnosis.Name as DiagnosisName"
+          )
+            ->join("Surgerys","Surgerys.SurgeryID","=","Dates.SurgeryID")
+            ->leftJoin("Diagnosis","Diagnosis.DiagnosisID","=","Dates.DiagnosisID")
+            ->where("Dates.PeopleID", $id)
+            ->where("Dates.SurgeryID",">",0)
+            ->orderBy("Dates.DateID","DESC")
+            ->get();
+
+        $content.= '
+        <page format="216x280" backtop="4mm" backbottom="4mm" backleft="0mm" backright="0mm">
+        '.$page_header.'
+        '.$page_footer.'
+        <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="width-160" style="text-align:left;">
+                <img src="logosalinas.png" width="120" />
+            </td>
+            <td class="width-250">
+                <h5 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h5>
+                <h5 style="margin:0;padding:0;font-weight:normal;" class="text-left">
+                Cirugía Digestiva<br />P. Universidad Católica de Chile</h5>
+            </td>
+            <td class="width-330">
+                Ficha del paciente
+                <h4>'.$people->Name.' '.$people->Lastname.' </h4>
+            </td>
+
+        </tr>
+        </table>
+        <hr />
+        <table width="100%">
+          <tr>
+            <td class="width-330">
+                <h5>Información</h5>
+                <table width="100%" valign="top">
+                <tr><td class="width-120"><b>Nombre:</b></td><td>'.$people->Name.' '.$people->Lastname.'</td></tr>
+                <tr><td class="width-120"><b>RUT:</b></td><td>'.$people->CardCode.'</td></tr>
+                <tr><td class="width-120"><b>Edad:</b></td><td>'.$edad->format('%Y').' años y '.$edad->format('%m').' meses y '.$edad->format('%m').' días</td></tr>
+                <tr><td class="width-120"><b>Fecha Nac.:</b></td><td>'.date("d/m/Y", strtotime($people->Birthday)).'</td></tr>
+                <tr><td class="width-120"><b>Email:</b></td><td>'.$people->Email.'</td></tr>
+                <tr><td class="width-120"><b>Teléfono:</b></td><td>'.$people->Phone.' '.$people->Phone2.'</td></tr>
+                <tr><td class="width-120"><b>Dirección:</b></td><td>'.$people->Address.' '.$people->City.'</td></tr>
+                <tr><td class="width-120"><b>Profesión:</b></td><td>'.$people->Profession.'</td></tr>
+                <tr><td class="width-120"><b>Previsión:</b></td><td>'.$people->HealthName.'</td></tr>
+                <tr><td class="width-120"><b>Estado ppto:</b></td><td>'.$people->BudgetStatus.'</td></tr>
+                <tr><td class="width-120"><b>Lugar ppto:</b></td><td>'.$people->BudgetPlace.'</td></tr>
+                </table> 
+            </td>
+            <td class="width-80"></td>
+            <td class="width-330" valign="top">
+            <h5>Datos clínicos</h5>
+            <table width="100%">
+            <tr><td class="width-120"><b>Peso (kg):</b></td><td>'.number_format($ant->Weight,1,",",".").'</td></tr>
+            <tr><td class="width-120"><b>Altura (cm):</b></td><td>'.number_format($ant->Height,0,",",".").'</td></tr>
+            <tr><td class="width-120"><b>Temp. (C&deg;):</b></td><td>'.number_format($ant->Temperature,).'</td></tr>
+            <tr><td class="width-120"><b>Presión:</b></td><td>'.number_format($ant->Sistolic,1,",",".").' / '.number_format($ant->Diastolic,1,",",".").'</td></tr>
+            <tr><td class="width-120"><b>IMC:</b></td><td>'.number_format($imc,1,",",".").'</td></tr>
+            <tr><td class="width-120"><b>Médicos:</b></td><td>'.($ant->AntMedical).'</td></tr>
+            <tr><td class="width-120"><b>Alergias:</b></td><td>'.($ant->AntAllergy).'</td></tr>
+            <tr><td class="width-120"><b>Quirúrgicos:</b></td><td>'.($ant->AntSurgical).'</td></tr>
+            <tr><td class="width-120"><b>Fármacos:</b></td><td>'.($ant->AntDrugs).'</td></tr>
+            </table>
+            </td>
+          </tr>
+        </table>
+        
+        <table width="100%">
+          <tr>
+            <td class="width-330" valign="top">
+                <h5>Evoluciones:</h5>
+                ';
+        foreach ($evolutions as $ev) {
+            $content .= '<b>'.date("d/m/Y H:i",strtotime($ev->CreatedAt)).' ('.$ev->CreatedByName.'):</b> '.$ev->Description.'<br />';
+        }
+        $content .= '
+        '.(count($evolutions) > 0 ? '' : 'No se han ingresado evoluciones').'
+            </td>
+            <td class="width-80">
+
+            </td>
+            <td class="width-330">
+                <h5>Cirug&iacute;a/Diagnóstico:</h5>
+                '.(count($surgerys) > 0 ? '' : 'No se ha iniciado el proceso de cirugia').'
+            </td>
+          </tr>
+        </table>
+        <hr />
+        
+        <table width="100%">
+          <tr>
+            <td class="width-740" valign="top">
+        ';
+        foreach ($results as $type=>$d) {
+            $content .= "<h5>".$type."</h5>";
+            foreach ($d as $field=>$val) {
+                $content .= "<b>".$field.":</b> ".$val."<br>";
+            }
+        }
+        $content .= '
+            </td>
+          </tr>
+        </table>
+        ';
+        /*
+        $content .= '
+        <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="width-330">
+                <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
+                <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
+                Cirugía Digestiva<br />P. Universidad Católica de Chile</h4>
+                <br />
+                Bypass gástrico, gastrectomía en manga<br />
+                Reflujo gastroesofágico, hernias vía laparoscópica<br />
+                Oncología tracto gastrointesnal
+            </td>
+
+            <td class="width-160" style="text-align:right;">
+                <img src="logosalinas.png" width="120" />
+            </td>
+        </tr>
+        </table>
+        <hr />
+        Nombre: '.$dates["Name"].'<br />
+        Rut: '.$dates["CardCode"].'<br />
+        Diagnóstico: '.$dates["Diagnosis"].'<br />
+        <h4>Rp</h4>
+        <b>'.$datas["ExamTypeName"].'</b><br><br>
+        ';
+
+        foreach ($datas["Exams"] as $exm) {
+            $content .= "- ".$exm."<br>";
+        }
+        */
+        $content .= '<br /><br /></page>';   
+
+
+        //210x279
+        $md5 = md5(time());
+        $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', 5);
+        $html2pdf->pdf->SetDisplayMode('fullpage');
+        $html2pdf->setDefaultFont('Arial');
+        $html2pdf->writeHTML($content); 
+        $html2pdf->output();
+        die();
     } 
 }

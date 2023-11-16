@@ -232,6 +232,7 @@ class PeopleController extends Controller
             ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
             //->where('Exams.Active',1)
             ->where('Orders.PeopleID', $id)
+            ->where('Orders.DateID', $pack->DateID)
             ->orderBy('ExamTypes.Name','ASC')
             ->groupBy(
                 'Dates.Date',
@@ -282,55 +283,45 @@ class PeopleController extends Controller
     public function recipesForPeople($id) {
 
         $output = [];
-        $packs = Order::select(
-                        'Orders.DateID',
+        $packs = Recipe::select(
+                        'Recipes.DateID',
                         'Dates.Date as Date',
-                        'Dates.Time as Time',
+                        'Dates.Time as Time'
                     )
-                    ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
-                    ->where("Orders.PeopleID",$id)
-                    ->groupBy("Orders.DateID","Dates.Date","Dates.Time")
-                    ->orderBy("Orders.DateID","DESC")
+                    ->leftJoin('Dates', 'Dates.DateID', '=', 'Recipes.DateID')
+                    ->join('Medicines', 'Medicines.MedicineID', '=', 'Recipes.MedicineID') 
+                    ->where('Recipes.PeopleID', $id)
+                    ->groupBy("Recipes.DateID","Dates.Date","Dates.Time")
+                    ->orderBy("Recipes.DateID","DESC")
                     ->get();
+
         foreach ($packs as $pack) {
-            $exams = Order::select(
+
+            $meds = Recipe::select(
                 'Dates.Date as Date',
                 'Dates.Time as Time',
-                'Exams.ExamTypeID',
-                'Exams.Name as ExamName',
-                'ExamTypes.Name as ExamTypeName'
+                'Medicines.Name as MedicineName',
+                'Recipes.Dose',
+                'Recipes.Period',
+                'Recipes.Periodicity',
             )
-            ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
-            ->join('Exams', 'Exams.ExamID', '=', 'Orders.ExamID')
-            ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
-            //->where('Exams.Active',1)
-            ->where('Orders.PeopleID', $id)
-            ->orderBy('ExamTypes.Name','ASC')
+            ->leftJoin('Dates', 'Dates.DateID', '=', 'Recipes.DateID')
+            ->join('Medicines', 'Medicines.MedicineID', '=', 'Recipes.MedicineID') 
+            ->where('Recipes.PeopleID', $id)
+            ->where('Recipes.DateID', $pack->DateID)
             ->groupBy(
                 'Dates.Date',
                 'Dates.Time',
-                'Exams.ExamTypeID',
-                'Exams.Name',
-                'ExamTypes.Name'
+                'Medicines.Name',
+                'Recipes.Dose',
+                'Recipes.Period',
+                'Recipes.Periodicity'
             )
             ->get();
 
             $rows  = [];
-            $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
-            $lastExamTypeID = "";
-            foreach ($exams as $ex) {
-                if ($lastExamTypeID!="" && $ex->ExamTypeID != $lastExamTypeID) {
-                    $rows[] = $acc;
-                    $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
-                }
-                $acc["ExamTypeID"] = $ex->ExamTypeID;
-                $acc["ExamTypeName"] = $ex->ExamTypeName;
-                $acc["Exams"][] = $ex->ExamName;
-
-                $lastExamTypeID = $ex->ExamTypeID;
-            }
-            if (count($acc)>0) {
-                $rows[] = $acc;
+            foreach ($meds as $m) {
+                $rows[] = $m;
             }
 
             $output[] = [
@@ -340,74 +331,22 @@ class PeopleController extends Controller
                 "data" => $rows
             ];
         } 
-
 
         return response()->json($output);
     }
     public function certificatesForPeople($id) {
- 
-        $output = [];
-        $packs = Order::select(
-                        'Orders.DateID',
-                        'Dates.Date as Date',
-                        'Dates.Time as Time',
-                    )
-                    ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
-                    ->where("Orders.PeopleID",$id)
-                    ->groupBy("Orders.DateID","Dates.Date","Dates.Time")
-                    ->orderBy("Orders.DateID","DESC")
-                    ->get();
-        foreach ($packs as $pack) {
-            $exams = Order::select(
-                'Dates.Date as Date',
-                'Dates.Time as Time',
-                'Exams.ExamTypeID',
-                'Exams.Name as ExamName',
-                'ExamTypes.Name as ExamTypeName'
-            )
-            ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
-            ->join('Exams', 'Exams.ExamID', '=', 'Orders.ExamID')
-            ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
-            //->where('Exams.Active',1)
-            ->where('Orders.PeopleID', $id)
-            ->orderBy('ExamTypes.Name','ASC')
-            ->groupBy(
-                'Dates.Date',
-                'Dates.Time',
-                'Exams.ExamTypeID',
-                'Exams.Name',
-                'ExamTypes.Name'
-            )
-            ->get();
 
-            $rows  = [];
-            $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
-            $lastExamTypeID = "";
-            foreach ($exams as $ex) {
-                if ($lastExamTypeID!="" && $ex->ExamTypeID != $lastExamTypeID) {
-                    $rows[] = $acc;
-                    $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
-                }
-                $acc["ExamTypeID"] = $ex->ExamTypeID;
-                $acc["ExamTypeName"] = $ex->ExamTypeName;
-                $acc["Exams"][] = $ex->ExamName;
+        $packs = Certificate::select(
+            'Certificates.*',
+            'Dates.Date as Date',
+            'Dates.Time as Time',
+        )
+        ->leftJoin('Dates', 'Dates.DateID', '=', 'Certificates.DateID')
+        ->where("Certificates.PeopleID",$id)
+        ->orderBy("Certificates.DateID","DESC")
+        ->get();
 
-                $lastExamTypeID = $ex->ExamTypeID;
-            }
-            if (count($acc)>0) {
-                $rows[] = $acc;
-            }
-
-            $output[] = [
-                "DateID" => $pack->DateID,
-                "Date" => $pack->Date,
-                "Time" => $pack->Time,
-                "data" => $rows
-            ];
-        } 
-
-
-        return response()->json($output);
+        return response()->json($packs);
     }
     
     public function update($id, Request $request) {

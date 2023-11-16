@@ -222,6 +222,7 @@ Route::group([
         'prefix' => 'pdf-render'
     ], function ($router) {
         Route::get('data-orders/{id}', 'PdfController@getDataOrders');
+        Route::get('people/{id}', 'PdfController@getPeople');
     });
 });
 
