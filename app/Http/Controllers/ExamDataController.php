@@ -14,6 +14,7 @@ class ExamDataController extends Controller
                 ->join('Exams', 'ExamDatas.ExamID', '=', 'Exams.ExamID')
                 ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
                 ->where('ExamDatas.Active',1)
+                ->orderBy('Exams.Name','ASC')
                 ->orderBy('ExamDatas.Name','ASC')
                 ->get();
         return response()->json($rows);
