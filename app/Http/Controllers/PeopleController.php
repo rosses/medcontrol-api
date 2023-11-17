@@ -103,6 +103,8 @@ class PeopleController extends Controller
                 if (isset($f)) {
                     $date->CreatedGroupID = $f->DestinationGroupID;
                     $date->StatusID = $f->StatusID;
+                    $date->SurgeryID = $f->SurgeryID;
+                    $date->DiagnosisID = $f->DiagnosisID;
                 } else {
                     $date->CreatedGroupID = 1;
                     $date->StatusID = 1;
@@ -134,6 +136,8 @@ class PeopleController extends Controller
                 if (isset($f)) {
                     $date->CreatedGroupID = $f->DestinationGroupID;
                     $date->StatusID = $f->StatusID;
+                    $date->SurgeryID = $f->SurgeryID;
+                    $date->DiagnosisID = $f->DiagnosisID;
                 } else {
                     $date->CreatedGroupID = 1;
                     $date->StatusID = 1;
