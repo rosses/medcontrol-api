@@ -166,7 +166,7 @@ class PdfController extends Controller
         foreach ($output as $dates) {
             foreach ($dates["data"] as $datas) {
                 $content.= '
-                <page format="140x200" backtop="8mm" backbottom="8mm" backleft="0mm" backright="0mm">
+                <page format="140x200" backtop="8mm" backbottom="20mm" backleft="0mm" backright="0mm">
                 '.$page_header.'
                 '.$page_footer.'
                 <table width="100%" cellpadding="0" cellspacing="0">
@@ -474,64 +474,33 @@ class PdfController extends Controller
         )
         ->orderBy("Recipes.DateID","DESC")
         ->get();
-        foreach ($packs as $pack) {
-            $exams = Recipe::select(
-                'Dates.Date as Date',
-                'Dates.Time as Time',
-                'Exams.ExamTypeID',
-                'Exams.Name as ExamName',
-                'ExamTypes.Name as ExamTypeName'
-            )
-            ->leftJoin('Dates', 'Dates.DateID', '=', 'Recipes.DateID')
-            ->join('Exams', 'Exams.ExamID', '=', 'Recipes.ExamID')
-            ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
-            ->where('Recipes.DateID', $id)
-            ->orderBy('ExamTypes.Name','ASC')
-            ->groupBy(
-                'Dates.Date',
-                'Dates.Time',
-                'Exams.ExamTypeID',
-                'Exams.Name',
-                'ExamTypes.Name'
-            )
-            ->get();
 
-            $rows  = [];
-            $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
-            $lastExamTypeID = "";
-            foreach ($exams as $ex) {
-                if ($lastExamTypeID!="" && $ex->ExamTypeID != $lastExamTypeID) {
-                    $rows[] = $acc;
-                    $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
-                }
-                $acc["ExamTypeID"] = $ex->ExamTypeID;
-                $acc["ExamTypeName"] = $ex->ExamTypeName;
-                $acc["Exams"][] = $ex->ExamName;
+        $recipes = Recipe::select(
+            'Dates.Date as Date',
+            'Dates.Time as Time',
+            'Medicines.Name',
+            'Recipes.*'
+        )
+        ->leftJoin('Dates', 'Dates.DateID', '=', 'Recipes.DateID')
+        ->join('Medicines', 'Medicines.MedicineID', '=', 'Recipes.MedicineID')
+        ->where('Recipes.DateID', $id)
+        ->orderBy('Medicines.Name','ASC')
+        ->get();
 
-                $lastExamTypeID = $ex->ExamTypeID;
-            }
-            if (count($acc)>0) {
-                $rows[] = $acc;
-            }
-            $opt = [
-                "DateID" => $pack->DateID,
-                "Date" => $pack->Date,
-                "Time" => $pack->Time,
-                "data" => $rows,
-                "Name" => "",
-                "Diagnosis" => "",
-                "CardCode" => $pack->PeopleCardCode
-            ];
-            if ($pack->PeopleName != "" && $pack->PeopleLastname != "") {
-                $opt["Name"] = $pack->PeopleName." ".$pack->PeopleLastname;
-                $pdfname = $pack->PeopleName." ".$pack->PeopleLastname;
-            }
-            if ($pack->DiagnosisName != "") {
-                $opt["Diagnosis"] = $pack->DiagnosisName;
-            }
-            $output[] = $opt;
-            
-        } 
+        $opt = [
+            "DateID" => $packs[0]->DateID,
+            "Date" => $packs[0]->Date,
+            "Time" => $packs[0]->Time,
+            "data" => $recipes, 
+            "CardCode" => $packs[0]->PeopleCardCode
+        ];
+        if ($packs[0]->PeopleName != "" && $packs[0]->PeopleLastname != "") {
+            $opt["Name"] = $packs[0]->PeopleName." ".$packs[0]->PeopleLastname;
+            $pdfname = $packs[0]->PeopleName." ".$packs[0]->PeopleLastname;
+        }
+        if ($packs[0]->DiagnosisName != "") {
+            $opt["Diagnosis"] = $packs[0]->DiagnosisName;
+        }
 
 
         $page_header = '<page_header></page_header>'; 
@@ -592,44 +561,41 @@ class PdfController extends Controller
             }
             --> 
         </style>';
-        
-        foreach ($output as $dates) {
-            foreach ($dates["data"] as $datas) {
-                $content.= '
-                <page format="140x200" backtop="8mm" backbottom="8mm" backleft="0mm" backright="0mm">
-                '.$page_header.'
-                '.$page_footer.'
-                <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td class="width-330">
-                        <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
-                        <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                        Cirugía Digestiva<br />P. Universidad Católica de Chile</h4>
-                        <br />
-                        Bypass gástrico, gastrectomía en manga<br />
-                        Reflujo gastroesofágico, hernias vía laparoscópica<br />
-                        Oncología tracto gastrointesnal
-                    </td>
-    
-                    <td class="width-160" style="text-align:right;">
-                        <img src="logosalinas.png" width="120" />
-                    </td>
-                </tr>
-                </table>
-                <hr />
-                Nombre: '.$dates["Name"].'<br />
-                Rut: '.$dates["CardCode"].'<br />
-                Diagnóstico: '.$dates["Diagnosis"].'<br />
-                <h4>Rp</h4>
-                <b>'.$datas["ExamTypeName"].'</b><br><br>
-                ';
+          
+        $content.= '
+        <page format="140x200" backtop="8mm" backbottom="8mm" backleft="0mm" backright="0mm">
+        '.$page_header.'
+        '.$page_footer.'
+        <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="width-330">
+                <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
+                <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
+                Cirugía Digestiva<br />P. Universidad Católica de Chile</h4>
+                <br />
+                Bypass gástrico, gastrectomía en manga<br />
+                Reflujo gastroesofágico, hernias vía laparoscópica<br />
+                Oncología tracto gastrointesnal
+            </td>
 
-                foreach ($datas["Exams"] as $exm) {
-                    $content .= "- ".$exm."<br>";
-                }
-                $content .= '<br /><br /></page>';   
-            }
+            <td class="width-160" style="text-align:right;">
+                <img src="logosalinas.png" width="120" />
+            </td>
+        </tr>
+        </table>
+        <hr />
+        Nombre: '.$opt["Name"].'<br />
+        Rut: '.$opt["CardCode"].'<br />
+        Diagnóstico: '.$opt["Diagnosis"].'<br />
+        <h4>Rp</h4> 
+        ';
+
+        foreach ($opt["data"] as $recipe) {
+            $content .= "- <b>".$recipe->Name."</b><br>Dosis: ".$recipe->Dose.", ".$recipe->Period." veces por ".$recipe->Periodicity." dias<br><br>";
         }
+        $content .= '<br /><br /></page>';   
+    
+    
 
         //210x279 
         $md5 = md5(time());

@@ -89,9 +89,24 @@ class PeopleController extends Controller
             } else if ($request->Mode=="newdate") {
                 $row = $found[0];
             }
+
+            //PeopleDates
+            $pd = Date::where("PeopleID", $row->PeopleID)->OrderBy("Dates.DateID","DESC")->get();
+            if (count($pd)>0) {
+                // Get last date
+                $f = $pd[0];                
+            }
+
             $date = new Date();
             if ($request->Mode == "fast") {
                 $date = new Date();
+                if (isset($f)) {
+                    $date->CreatedGroupID = $f->DestinationGroupID;
+                    $date->StatusID = $f->StatusID;
+                } else {
+                    $date->CreatedGroupID = 1;
+                    $date->StatusID = 1;
+                }
                 $date->PeopleID = $row->PeopleID;
                 $date->Date = $request->dates["date"];
                 $date->Time = $request->dates["time"];
@@ -102,6 +117,7 @@ class PeopleController extends Controller
                 $date->UpdatedAt = date("Y-m-d H:i:s");
                 $date->save();
             } else if ($request->Mode == "full") {
+                /*
                 $date = new Date();
                 $date->PeopleID = $row->PeopleID;
                 $date->Date = date("Y-m-d");
@@ -112,8 +128,16 @@ class PeopleController extends Controller
                 $date->UpdatedUserID = JWTAuth::user()->UserID;
                 $date->UpdatedAt = date("Y-m-d H:i:s");
                 $date->save();
+                */
             } else if ($request->Mode == "newdate") {
                 $date = new Date();
+                if (isset($f)) {
+                    $date->CreatedGroupID = $f->DestinationGroupID;
+                    $date->StatusID = $f->StatusID;
+                } else {
+                    $date->CreatedGroupID = 1;
+                    $date->StatusID = 1;
+                }
                 $date->PeopleID = $row->PeopleID;
                 $date->Date = $request->dates["date"];
                 $date->Time = $request->dates["time"];

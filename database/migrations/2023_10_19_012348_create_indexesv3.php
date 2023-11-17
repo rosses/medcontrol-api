@@ -25,7 +25,7 @@ class CreateIndexesv3 extends Migration
         Schema::table('Interviews', function(Blueprint $table) { $table->index('PeopleID'); });
         Schema::table('Peoples', function(Blueprint $table) { $table->index('GroupID'); });
         Schema::table('Dates', function(Blueprint $table) { 
-            $table->date('StatusID')->after('DestinationGroupID')->nullable();
+            $table->integer('StatusID')->after('DestinationGroupID')->default('0');
             $table->index('StatusID'); 
             $table->index('PeopleID'); 
             $table->index('SurgeryID'); 

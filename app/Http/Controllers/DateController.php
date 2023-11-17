@@ -163,7 +163,7 @@ class DateController extends Controller
             $date->Obs = $request->Obs;
             $date->UpdatedUserID = JWTAuth::user()->UserID;
             $date->UpdatedAt = date("Y-m-d H:i:s");
-            $date->save(); 
+            
 
             if ($request->anthropometry && is_array($request->anthropometry)) {
                 $o = $request->anthropometry;
@@ -292,9 +292,17 @@ class DateController extends Controller
             }
 
             if (is_array($request->orders) && count($request->orders) > 0) {
-                //$people = People::find($request->orders);
-                //$people 
+                $people = People::find($date->PeopleID);
+                $people->GroupID = 2;
+                $people->StatusID = 3;
+                $people->save();
+
+                $date->DestinationGroupID = 2;
+                $date->StatusID = 3;
+                $date->save();
             }
+
+            $date->save();
 
             return response()->json([
                 "success" => true,
