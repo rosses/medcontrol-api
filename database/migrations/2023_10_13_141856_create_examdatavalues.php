@@ -18,7 +18,7 @@ class CreateExamdatavalues extends Migration
             $table->integer('OrderID')->default(0);
             $table->integer('DateID')->default(0);
             $table->integer('ExamDataID')->default(0);
-            $table->string('Value', 128)->default('');
+            $table->string('Value', 4000)->default('');
         });
     }
 

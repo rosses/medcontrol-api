@@ -188,6 +188,24 @@ class PeopleController extends Controller
                                 ->where("Dates.SurgeryID",">",0)
                                 ->orderBy("Dates.DateID","DESC")
                                 ->get();
+
+        $people["RequestedOrders"] = Order::select(
+                                        "Exams.Name as ExamName",
+                                        "ExamTypes.Name as ExamTypeName",
+                                        "ExamDatas.Name as DataName",
+                                        DB::raw("(CASE WHEN ExamDataValues.Value = '1' THEN 'checked' ELSE '' END) as Value")
+                                     )
+                            ->join("Exams","Exams.ExamID","=","Orders.ExamID")
+                            ->join("ExamTypes","ExamTypes.ExamTypeID","=","Exams.ExamTypeID")
+                            ->join("ExamDatas","ExamDatas.ExamID","=","Exams.ExamID")
+                            ->leftJoin("ExamDataValues", function($join) {
+                                $join->on("ExamDataValues.ExamDataID","=","ExamDatas.ExamDataID");
+                                $join->on("ExamDataValues.OrderID","=","Orders.OrderID");
+                            })
+                            ->where("Orders.PeopleID",$id)
+                            ->where("ExamDatas.ExamDataType","=","boolean")
+                            ->get();
+
         return response()->json($people); 
     }
     public function datesForPeople($id) {

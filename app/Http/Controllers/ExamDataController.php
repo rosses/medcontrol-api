@@ -36,11 +36,13 @@ class ExamDataController extends Controller
                         $OrderID = $order->OrderID;
                     }
                     if ($OrderID > 0) {
-                        $edv->OrderID = $OrderID;
-                        $edv->DateID = $request->DateID;
-                        $edv->ExamDataID = $d["ExamDataID"];
-                        $edv->Value = $d["Value"];                        
-                        $edv->save();
+                        if (isset($d["Value"])) {
+                            $edv->OrderID = $OrderID;
+                            $edv->DateID = $request->DateID;
+                            $edv->ExamDataID = $d["ExamDataID"];
+                            $edv->Value = $d["Value"];                        
+                            $edv->save();
+                        }
                     }
 
                 }
