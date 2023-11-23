@@ -80,6 +80,7 @@ class PeopleController extends Controller
                 $row->Obs = ($request->Obs ? $request->Obs : '');
                 $row->GroupID = 1;
                 $row->StatusID = 1;
+                $row->BudgetPlace = "CLINICA PV";
                 $row->CreatedUserID = JWTAuth::user()->UserID;
                 $row->CreatedAt = date("Y-m-d H:i:s");
                 $row->UpdatedUserID = JWTAuth::user()->UserID;
@@ -215,9 +216,10 @@ class PeopleController extends Controller
         }
     }
     public function show($id) {
-        $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')
+        $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName', 'BudgetStatus.Name as BudgetStatusName')
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
                 ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
+                ->leftJoin('BudgetStatus','BudgetStatus.BudgetStatusID','=','Peoples.BudgetStatusID')
                 ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID')
                 ->where("PeopleID",$id)
                 ->first();
@@ -463,7 +465,8 @@ class PeopleController extends Controller
         $row->Profession = $request->Profession;
         $row->Obs = $request->Obs;
         $row->BudgetPlace = $request->BudgetPlace;
-        $row->BudgetStatus = $request->BudgetStatus;
+        //$row->BudgetStatus = $request->BudgetStatus;
+        $row->BudgetStatusID = $request->BudgetStatusID;
         $row->save();
         return response()->json($row, 200);
     }

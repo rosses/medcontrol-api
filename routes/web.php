@@ -161,6 +161,13 @@ Route::group([
         Route::get('/', 'StatusController@index');
     });
 
+    Route::group([
+        'prefix' => 'budget-status',
+        'middleware' => 'auth'
+    ], function($router) {
+        Route::get('/', 'BudgetStatusController@index');
+    });
+
     /* People */
     Route::group([
         'prefix' => 'people',
