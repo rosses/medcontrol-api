@@ -292,14 +292,15 @@ class DateController extends Controller
             }
 
             if (is_array($request->orders) && count($request->orders) > 0) {
-                $people = People::find($date->PeopleID);
-                $people->GroupID = 2;
-                $people->StatusID = 3;
-                $people->save();
+                //23.11.2023: Estado no avanzan automatico
+                //$people = People::find($date->PeopleID);
+                //$people->GroupID = 2;
+                //$people->StatusID = 3;
+                //$people->save();
 
-                $date->DestinationGroupID = 2;
-                $date->StatusID = 3;
-                $date->save();
+                //$date->DestinationGroupID = 2;
+                //$date->StatusID = 3;
+                //$date->save();
             }
 
             $date->save();

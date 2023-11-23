@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Anthropometry;
 use App\Models\Certificate;
 use App\Models\Date;
+use App\Models\Status;
 use App\Models\Diagnosis;
 use App\Models\Evolution;
 use App\Models\Interview;
@@ -74,10 +75,11 @@ class PeopleController extends Controller
                 $row->Address = mb_strtoupper(($request->Address ? $request->Address : ''),'utf-8');
                 $row->County = mb_strtoupper(($request->County ? $request->County : ''),'utf-8');
                 $row->City = mb_strtoupper(($request->City ? $request->City : ''),'utf-8');
-                $row->HealthID = ($request->Health ? $request->HealthID : 0);
+                $row->HealthID = ($request->HealthID ? $request->HealthID : 0);
                 $row->Profession = ($request->Profession ? $request->Profession : '');
                 $row->Obs = ($request->Obs ? $request->Obs : '');
                 $row->GroupID = 1;
+                $row->StatusID = 1;
                 $row->CreatedUserID = JWTAuth::user()->UserID;
                 $row->CreatedAt = date("Y-m-d H:i:s");
                 $row->UpdatedUserID = JWTAuth::user()->UserID;
@@ -101,51 +103,50 @@ class PeopleController extends Controller
             if ($request->Mode == "fast") {
                 $date = new Date();
                 if (isset($f)) {
-                    $date->CreatedGroupID = $f->DestinationGroupID;
-                    $date->StatusID = $f->StatusID;
+                    //$date->CreatedGroupID = $f->DestinationGroupID;
+                    //$date->StatusID = $f->StatusID;
                     $date->SurgeryID = $f->SurgeryID;
                     $date->DiagnosisID = $f->DiagnosisID;
                 } else {
-                    $date->CreatedGroupID = 1;
-                    $date->StatusID = 1;
+                    //$date->CreatedGroupID = 1;
+                    //$date->StatusID = 1;
                 }
                 $date->PeopleID = $row->PeopleID;
                 $date->Date = $request->dates["date"];
                 $date->Time = $request->dates["time"];
-                $date->CreatedGroupID = $row->GroupID;
+                //$date->CreatedGroupID = $row->GroupID;
                 $date->CreatedUserID = JWTAuth::user()->UserID;
                 $date->CreatedAt = date("Y-m-d H:i:s");
                 $date->UpdatedUserID = JWTAuth::user()->UserID;
                 $date->UpdatedAt = date("Y-m-d H:i:s");
                 $date->save();
             } else if ($request->Mode == "full") {
-                /*
+                
                 $date = new Date();
                 $date->PeopleID = $row->PeopleID;
                 $date->Date = date("Y-m-d");
                 $date->Time = date("H:i:s");
-                $date->CreatedGroupID = $row->GroupID;
+                //$date->CreatedGroupID = $row->GroupID;
                 $date->CreatedUserID = JWTAuth::user()->UserID;
                 $date->CreatedAt = date("Y-m-d H:i:s");
                 $date->UpdatedUserID = JWTAuth::user()->UserID;
                 $date->UpdatedAt = date("Y-m-d H:i:s");
                 $date->save();
-                */
+                
             } else if ($request->Mode == "newdate") {
                 $date = new Date();
                 if (isset($f)) {
-                    $date->CreatedGroupID = $f->DestinationGroupID;
-                    $date->StatusID = $f->StatusID;
+                    //$date->CreatedGroupID = $f->DestinationGroupID;
+                    //$date->StatusID = $f->StatusID;
                     $date->SurgeryID = $f->SurgeryID;
                     $date->DiagnosisID = $f->DiagnosisID;
                 } else {
-                    $date->CreatedGroupID = 1;
-                    $date->StatusID = 1;
+                    //$date->CreatedGroupID = 1;
+                    //$date->StatusID = 1;
                 }
                 $date->PeopleID = $row->PeopleID;
                 $date->Date = $request->dates["date"];
-                $date->Time = $request->dates["time"];
-                $date->CreatedGroupID = $row->GroupID;
+                $date->Time = $request->dates["time"]; 
                 $date->CreatedUserID = JWTAuth::user()->UserID;
                 $date->CreatedAt = date("Y-m-d H:i:s");
                 $date->UpdatedUserID = JWTAuth::user()->UserID;
@@ -165,6 +166,53 @@ class PeopleController extends Controller
             ], 400);
         }
        
+    }
+    public function changeDates($id, Request $request) {
+        try {
+
+
+            $p = People::find($id);
+            if ($request->DateAsEvaluation) {
+                $p->DateAsEvaluation = $request->DateAsEvaluation;
+            }
+            if ($request->DateAsFinish) {
+                $p->DateAsFinish = $request->DateAsFinish;
+            }
+            if ($request->DateAsSurgery) {
+                $p->DateAsSurgery = $request->DateAsSurgery;
+            }
+            $p->save();
+
+            return response()->json([
+                "success" => true,
+                "data" => $p
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 400);
+        }
+    }
+    public function changeStatus($id, Request $request) {
+        try {
+
+            $s=Status::find($request->StatusID);
+
+            $p = People::find($id);
+            $p->StatusID = $request->StatusID;
+            $p->GroupID = $s->GroupID;
+            $p->save();
+
+            return response()->json([
+                "success" => true
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 400);
+        }
     }
     public function show($id) {
         $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')

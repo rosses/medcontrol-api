@@ -172,6 +172,8 @@ Route::group([
         Route::get('/{id}/recipes', 'PeopleController@recipesForPeople');
         Route::get('/{id}/certificates', 'PeopleController@certificatesForPeople');
         Route::get('/{id}/evolutions', 'PeopleController@evolutionsForPeople');
+        Route::post('/{id}/change-status', 'PeopleController@changeStatus');
+        Route::post('/{id}/change-dates', 'PeopleController@changeDates');
         Route::get('/{id}', 'PeopleController@show');
         Route::post('/', 'PeopleController@create');
         Route::post('/{id}', 'PeopleController@update');
