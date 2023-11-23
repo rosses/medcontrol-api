@@ -179,6 +179,7 @@ Route::group([
         Route::get('/{id}/recipes', 'PeopleController@recipesForPeople');
         Route::get('/{id}/certificates', 'PeopleController@certificatesForPeople');
         Route::get('/{id}/evolutions', 'PeopleController@evolutionsForPeople');
+        Route::get('/{id}/text', 'PeopleController@getText');
         Route::post('/{id}/change-status', 'PeopleController@changeStatus');
         Route::post('/{id}/change-dates', 'PeopleController@changeDates');
         Route::get('/{id}', 'PeopleController@show');

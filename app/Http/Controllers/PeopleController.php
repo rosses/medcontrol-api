@@ -444,7 +444,6 @@ class PeopleController extends Controller
 
         return response()->json($packs);
     }
-    
     public function update($id, Request $request) {
         $row = People::find($id);
         $row->Birthday = $request->Birthday;
@@ -490,5 +489,104 @@ class PeopleController extends Controller
                 "message" => $e->getMessage()
             ], 400);
         }
+    }
+    public function getText($id) {
+
+        try {
+            $txt = date("Y-m-d H:i:s")."\n";        
+            $people = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')
+            ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
+            ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
+            ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID')
+            ->where("PeopleID", $id);    
+            
+            $people = $people->first();
+
+            $ant = Anthropometry::where("PeopleID", $id)->orderBy("AnthropometryID","DESC")->first();
+
+            $evolutions =  Evolution::select("Evolutions.*", "Users.Name as CreatedByName")
+                                ->join("Users","Users.UserID","=","Evolutions.CreatedUserID")
+                                ->where("Evolutions.PeopleID", $id)
+                                ->get();
+
+           
+            if ($people->Birthday=="") {
+                $people->Birthday = date("Y-m-d H:i:s");
+            }
+            $fecha_nac = new \DateTime(date('Y/m/d',strtotime($people->Birthday))); 
+            $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
+            $edad = date_diff($fecha_hoy,$fecha_nac); 
+            $imc = 0;
+
+            $edv = DB::select("
+            SELECT		E.ExamID,  ET.Name ExamTypeName, E.Name, ED.ExamDataType, ED.Name ExamDataName, EDV.Value 
+            FROM		Exams as E 
+            INNER JOIN	ExamTypes ET ON ET.ExamTypeID = E.ExamTypeID
+            INNER JOIN	ExamDatas ED ON ED.ExamID = E.ExamID 
+            INNER JOIN	ExamDataValues EDV ON EDV.ExamDataID = ED.ExamDataID 
+            INNER JOIN  Orders O ON O.PeopleID = '".$id."' AND O.OrderID = EDV.OrderID 
+            WHERE		E.Active = 1 
+            ORDER BY	ET.Name ASC, EDV.ExamDataValueID DESC
+            ");
+            $edv = json_decode(json_encode($edv), true);
+            $results = [];
+            foreach ($edv as $rr) {
+                if (!isset($results[$rr["ExamTypeName"]][$rr["ExamDataName"]])) { // Only newest result
+                    if ($rr["ExamDataType"]=="boolean") {
+                        if ($rr["Value"]=="1") {
+                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "OK";
+                        }
+                        else {
+                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "NO-OK";
+                        }
+                    }
+                    else if ($rr["ExamDataType"]=="text") { 
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = $rr["Value"];
+                    } 
+                    else if ($rr["ExamDataType"]=="number") { 
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = round($rr["Value"],2);
+                    }
+                }
+            }
+            
+            /*
+            $surgerys = Date::select(
+                "Dates.*",
+                "Surgerys.Name as SurgeryName",
+                "Diagnosis.Name as DiagnosisName"
+            )
+                ->join("Surgerys","Surgerys.SurgeryID","=","Dates.SurgeryID")
+                ->leftJoin("Diagnosis","Diagnosis.DiagnosisID","=","Dates.DiagnosisID")
+                ->where("Dates.PeopleID", $id)
+                ->where("Dates.SurgeryID",">",0)
+                ->orderBy("Dates.DateID","DESC")
+                ->get();
+            */
+
+            $txt .= "\nANTROPOMETRIA\n"; 
+            $txt .= "Peso: ".number_format($ant->Weight,0,",",".")." Talla: ".number_format($ant->Height,0,",",".")."  IMC: ".$imc."   Temp. ".number_format($ant->Temperature,1,",",".")."";
+            $txt .= "\n\nANTECEDENTES\n";
+            $txt .= "Ciudad donde Vive: ".$people->City."\n";
+            $txt .= "Profesión: ".$people->Profession."\n";
+            $txt .= "Médicos: ".$people->AntMedical."\n";
+            $txt .= "Farmacos: ".$people->AntDrugs."\n";
+            $txt .= "Quirúrgicos: ".$people->AntSurgical."\n";
+            $txt .= "Alergias: ".$people->AntAllergy."\n"; 
+
+            foreach ($results as $type=>$d) {
+                $txt .= "\n".mb_strtoupper($type,'utf-8')."\n";
+                foreach ($d as $field=>$val) {
+                    $txt .= "".$field.": ".$val."\n";
+                }
+            } 
+
+            return response()->json([
+                "text" => $txt
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 400);
+        }  
     }
 }
