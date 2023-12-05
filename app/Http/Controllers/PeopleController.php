@@ -549,7 +549,7 @@ class PeopleController extends Controller
                 }
             }
             
-            /*
+            
             $surgerys = Date::select(
                 "Dates.*",
                 "Surgerys.Name as SurgeryName",
@@ -560,18 +560,23 @@ class PeopleController extends Controller
                 ->where("Dates.PeopleID", $id)
                 ->where("Dates.SurgeryID",">",0)
                 ->orderBy("Dates.DateID","DESC")
+                ->limit(1)
                 ->get();
-            */
+            
+            if (count($surgerys)>0) {
+                $surgery = $surgerys[0];
+            }
+        
 
             $txt .= "\nANTROPOMETRIA\n"; 
             $txt .= "Peso: ".number_format($ant->Weight,0,",",".")." Talla: ".number_format($ant->Height,0,",",".")."  IMC: ".$imc."   Temp. ".number_format($ant->Temperature,1,",",".")."";
             $txt .= "\n\nANTECEDENTES\n";
             $txt .= "Ciudad donde Vive: ".$people->City."\n";
             $txt .= "Profesión: ".$people->Profession."\n";
-            $txt .= "Médicos: ".$people->AntMedical."\n";
-            $txt .= "Farmacos: ".$people->AntDrugs."\n";
-            $txt .= "Quirúrgicos: ".$people->AntSurgical."\n";
-            $txt .= "Alergias: ".$people->AntAllergy."\n"; 
+            $txt .= "Médicos: ".(isset($surgery) ? $surgery->AntMedical : '')."\n";
+            $txt .= "Farmacos: ".(isset($surgery) ? $surgery->AntDrugs : '')."\n";
+            $txt .= "Quirúrgicos: ".(isset($surgery) ? $surgery->AntSurgical : '')."\n";
+            $txt .= "Alergias: ".(isset($surgery) ? $surgery->AntAllergy : '')."\n"; 
 
             foreach ($results as $type=>$d) {
                 $txt .= "\n".mb_strtoupper($type,'utf-8')."\n";
