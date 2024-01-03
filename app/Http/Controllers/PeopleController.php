@@ -569,7 +569,7 @@ class PeopleController extends Controller
         
 
             $txt .= "\nANTROPOMETRIA\n"; 
-            $txt .= "Peso: ".number_format($ant->Weight,0,",",".")." Talla: ".number_format($ant->Height,0,",",".")."  IMC: ".$imc."   Temp. ".number_format($ant->Temperature,1,",",".")."";
+            $txt .= "Peso: ".number_format($ant->Weight,0,",",".")." Talla: ".number_format($ant->Height,0,",",".")."  IMC: ".$imc.""; //Temp. ".number_format($ant->Temperature,1,",",".")."
             $txt .= "\n\nANTECEDENTES\n";
             $txt .= "Ciudad donde Vive: ".$people->City."\n";
             $txt .= "Profesión: ".$people->Profession."\n";

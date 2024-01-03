@@ -340,7 +340,10 @@ class PdfController extends Controller
             ->where("Dates.SurgeryID",">",0)
             ->orderBy("Dates.DateID","DESC")
             ->get();
-
+        /*
+            <tr><td class="width-120"><b>Temp. (C&deg;):</b></td><td>'.number_format($ant->Temperature,1,",",".").'</td></tr>
+            <tr><td class="width-120"><b>Presión:</b></td><td>'.number_format($ant->Sistolic,1,",",".").' / '.number_format($ant->Diastolic,1,",",".").'</td></tr>
+        */
         $content.= '
         <page format="216x280" backtop="4mm" backbottom="4mm" backleft="0mm" backright="0mm">
         '.$page_header.'
@@ -387,8 +390,6 @@ class PdfController extends Controller
             <table width="100%">
             <tr><td class="width-120"><b>Peso (kg):</b></td><td>'.number_format($ant->Weight,1,",",".").'</td></tr>
             <tr><td class="width-120"><b>Altura (cm):</b></td><td>'.number_format($ant->Height,0,",",".").'</td></tr>
-            <tr><td class="width-120"><b>Temp. (C&deg;):</b></td><td>'.number_format($ant->Temperature,1,",",".").'</td></tr>
-            <tr><td class="width-120"><b>Presión:</b></td><td>'.number_format($ant->Sistolic,1,",",".").' / '.number_format($ant->Diastolic,1,",",".").'</td></tr>
             <tr><td class="width-120"><b>IMC:</b></td><td>'.number_format($imc,1,",",".").'</td></tr>
             <tr><td class="width-120"><b>Médicos:</b></td><td>'.($ant->AntMedical).'</td></tr>
             <tr><td class="width-120"><b>Alergias:</b></td><td>'.($ant->AntAllergy).'</td></tr>
