@@ -38,7 +38,8 @@ FROM base AS builder
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN composer install --no-interaction --prefer-dist --no-dev
+RUN composer install --no-interaction --prefer-dist
+# --no-dev     # removed from composer install 
 
 RUN rm -rf /usr/local/bin/composer && rm -rf /root/.composer
 
