@@ -100,7 +100,8 @@ $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 // $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
-$app->register(\KitLoong\MigrationsGenerator\MigrationsGeneratorServiceProvider::class);
+
+//$app->register(\KitLoong\MigrationsGenerator\MigrationsGeneratorServiceProvider::class);
 $app->register(\Krlove\EloquentModelGenerator\Provider\GeneratorServiceProvider::class);
 
 /*
