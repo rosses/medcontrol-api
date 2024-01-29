@@ -5,7 +5,7 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "^7.3",
         "laravel/lumen-framework": "^8.3.1",
         "spipu/html2pdf": "^5.2",
         "tymon/jwt-auth": "*"
