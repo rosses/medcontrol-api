@@ -1,10 +1,9 @@
 FROM php:7.4-fpm-alpine AS base
 
 RUN apk add --no-cache ca-certificates autoconf git nginx curl \
-    libpng-dev libxml2-dev libzip-dev libjpeg-turbo-dev zip unzip freetype-dev && \ 
+    libpng-dev libxml2-dev libzip-dev libjpeg-turbo-dev zip unzip supervisor freetype-dev && \ 
     docker-php-ext-install zip soap pdo_mysql bcmath 
 #mbstring already in fpm-alpine , remove for ext-install
-#supervisor removed
 
 RUN docker-php-ext-install gd
 
