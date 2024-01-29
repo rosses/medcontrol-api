@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    return $router->app->version()." -> connected to ".env("DB_HOST");
 });
 
 Route::group([
