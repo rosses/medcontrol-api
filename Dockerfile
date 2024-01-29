@@ -6,6 +6,8 @@ RUN apk add --no-cache ca-certificates autoconf git nginx curl \
 #mbstring already in fpm-alpine , remove for ext-install
 #supervisor removed
 
+RUN docker-php-ext-install gd
+
 WORKDIR /var/www/html
 
 COPY . /var/www/html
