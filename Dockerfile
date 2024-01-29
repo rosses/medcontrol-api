@@ -33,6 +33,7 @@ COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 EXPOSE 80
 
 #CMD ["/usr/bin/supervisord","-n","-c","/etc/supervisor/supervisord.conf"]
+CMD ["nginx","-g", "daemon off;"]
 
 FROM base AS builder
 
