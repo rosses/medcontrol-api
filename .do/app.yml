@@ -1,0 +1,8 @@
+name: medcontrol-api
+services:
+- dockerfile_path: Dockerfile
+  github:
+    branch: master
+    deploy_on_push: true
+    repo: rosses/medcontrol-api
+  name: medcontrol-api
