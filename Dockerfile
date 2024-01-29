@@ -11,7 +11,7 @@ RUN wget https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8
     apk add --allow-untrusted msodbcsql17_17.5.1.1-1_amd64.apk && \
     apk add --allow-untrusted mssql-tools_17.5.1.1-1_amd64.apk && \
     apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS unixodbc-dev && \
-    pecl install pdo_sqlsrv && \
+    pecl install pdo_sqlsrv-5.8.0 && \
     docker-php-ext-enable pdo_sqlsrv && \
     apk del .phpize-deps && \
     rm msodbcsql17_17.5.1.1-1_amd64.apk && \
