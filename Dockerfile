@@ -6,15 +6,16 @@ RUN apk add --no-cache ca-certificates autoconf git nginx curl \
 #mbstring already in fpm-alpine , remove for ext-install
 RUN docker-php-ext-install gd
 
-ENV ACCEPT_EULA=Y
-RUN apk add gnupg
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apk add - 
-RUN curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list 
-RUN ACCEPT_EULA=Y apk add msodbcsql17 unixodbc-dev 
-RUN pecl install sqlsrv
-RUN pecl install pdo_sqlsrv
-RUN docker-php-ext-enable sqlsrv pdo_sqlsrv
-
+RUN wget https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.5.1.1-1_amd64.apk && \
+    wget https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/mssql-tools_17.5.1.1-1_amd64.apk && \
+    apk add --allow-untrusted msodbcsql17_17.5.1.1-1_amd64.apk && \
+    apk add --allow-untrusted mssql-tools_17.5.1.1-1_amd64.apk && \
+    apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS unixodbc-dev && \
+    pecl install pdo_sqlsrv && \
+    docker-php-ext-enable pdo_sqlsrv && \
+    apk del .phpize-deps && \
+    rm msodbcsql17_17.5.1.1-1_amd64.apk && \
+    rm mssql-tools_17.5.1.1-1_amd64.apk
 
 WORKDIR /var/www/html
 
