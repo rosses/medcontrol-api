@@ -372,6 +372,7 @@ class PeopleController extends Controller
         $evolutions =  Evolution::select("Evolutions.*", "Users.Name as CreatedByName")
                             ->join("Users","Users.UserID","=","Evolutions.CreatedUserID")
                             ->where("Evolutions.PeopleID", $id)
+                            ->orderBy("EvolutionID","DESC")
                             ->get();
                             
         return response()->json($evolutions);
