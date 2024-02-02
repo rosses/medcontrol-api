@@ -46,6 +46,8 @@ RUN sed -i 's/max_input_time = 60/max_input_time = 600/g' "$PHP_INI_DIR/php.ini"
 RUN sed -i 's/;post_max_size = 8M/post_max_size = 256M/g' "$PHP_INI_DIR/php.ini" 
 RUN sed -i 's/post_max_size = 8M/post_max_size = 256M/g' "$PHP_INI_DIR/php.ini"  
 
+RUN sed -i 's/output_buffering = 4096/output_buffering = 65535/g' "$PHP_INI_DIR/php.ini"  
+
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf 
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 
