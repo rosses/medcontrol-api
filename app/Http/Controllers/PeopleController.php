@@ -23,7 +23,13 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 class PeopleController extends Controller
 {
     public function index(Request $request) {
-        $rows = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')
+        $rows = People::select(
+                    'Peoples.*',
+                    'Groups.Name as GroupName',
+                    'Healths.Name as HealthName',
+                    'Status.Name as StatusName',
+                    DB::raw("(SELECT TOP 1 CONVERT(varchar(10),X.Date,103) FROM Dates X WHERE X.PeopleID = Peoples.PeopleID ORDER BY Dates DESC) as LastDate")
+                )
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
                 ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
                 ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID');
@@ -34,6 +40,7 @@ class PeopleController extends Controller
                             ->orWhere("Peoples.Lastname","like","%".$request->Search."%");
                     });
                 }
+                
                 if ($request->StatusID!="") {
                     $rows = $rows->where("Peoples.StatusID", $request->StatusID);
                 }
