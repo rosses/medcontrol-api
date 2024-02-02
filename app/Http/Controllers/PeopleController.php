@@ -24,31 +24,31 @@ class PeopleController extends Controller
 {
     public function index(Request $request) {
         $rows = People::select(
-                    'Peoples.*',
-                    'Groups.Name as GroupName',
-                    'Healths.Name as HealthName',
-                    'Status.Name as StatusName',
-                    DB::raw("(SELECT TOP 1 CONVERT(varchar(10),X.Date,103) FROM Dates X WHERE X.PeopleID = Peoples.PeopleID ORDER BY [Date] DESC) as LastDate")
-                )
-                ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
-                ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
-                ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID');
+            'Peoples.*',
+            'Groups.Name as GroupName',
+            'Healths.Name as HealthName',
+            'Status.Name as StatusName',
+            DB::raw("(SELECT TOP 1 CONVERT(varchar(10),X.Date,103) FROM Dates X WHERE X.PeopleID = Peoples.PeopleID ORDER BY [Date] DESC) as LastDate")
+        )
+        ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
+        ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
+        ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID');
+
+        if ($request->Search!="") {
+            $rows = $rows->where(function ($query) use ($request) {
+                $query->where("Peoples.Name","like","%".$request->Search."%")
+                    ->orWhere("Peoples.Lastname","like","%".$request->Search."%");
+            });
+        }
         
-                if ($request->Search!="") {
-                    $rows = $rows->where(function ($query) use ($request) {
-                        $query->where("Peoples.Name","like","%".$request->Search."%")
-                            ->orWhere("Peoples.Lastname","like","%".$request->Search."%");
-                    });
-                }
-                
-                if ($request->StatusID!="") {
-                    $rows = $rows->where("Peoples.StatusID", $request->StatusID);
-                }
-                if ($request->HealthID!="") {
-                    $rows = $rows->where("Peoples.HealthID", $request->HealthID);
-                }        
+        if ($request->StatusID!="") {
+            $rows = $rows->where("Peoples.StatusID", $request->StatusID);
+        }
+        if ($request->HealthID!="") {
+            $rows = $rows->where("Peoples.HealthID", $request->HealthID);
+        }
         
-        $rows = $rows->orderBy('Peoples.Name','ASC')->get();
+        $rows = $rows->orderBy('Peoples.Name','ASC')->limit(20)->get();
         return response()->json($rows);
     }
     public function create(Request $request) {
