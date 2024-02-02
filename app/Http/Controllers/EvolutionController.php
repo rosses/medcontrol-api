@@ -17,7 +17,7 @@ class EvolutionController extends Controller
         $ev->CreatedUserID = JWTAuth::user()->UserID;
         $ev->CreatedAt = date("Y-m-d H:i:s");
         $ev->save();
-        return response()->json($ev, 201);
+        return response()->json($ev, 200);
     } 
     public function delete($id) {
         Evolution::findOrFail($id)->delete(); //->update(["Active"=>0]);
