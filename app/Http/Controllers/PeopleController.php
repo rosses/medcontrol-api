@@ -28,7 +28,7 @@ class PeopleController extends Controller
                     'Groups.Name as GroupName',
                     'Healths.Name as HealthName',
                     'Status.Name as StatusName',
-                    DB::raw("(SELECT TOP 1 CONVERT(varchar(10),X.Date,103) FROM Dates X WHERE X.PeopleID = Peoples.PeopleID ORDER BY Dates DESC) as LastDate")
+                    DB::raw("(SELECT TOP 1 CONVERT(varchar(10),X.Date,103) FROM Dates X WHERE X.PeopleID = Peoples.PeopleID ORDER BY [Date] DESC) as LastDate")
                 )
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
                 ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
