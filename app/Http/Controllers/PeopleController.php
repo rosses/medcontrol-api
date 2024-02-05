@@ -49,7 +49,7 @@ class PeopleController extends Controller
         }
         
         $rows = $rows->orderBy('Peoples.Name','ASC')->get();
-        return response()->json($rows);
+        return response()->json($rows)->paginate(20);
     }
     public function create(Request $request) {
 
@@ -379,7 +379,7 @@ class PeopleController extends Controller
         $evolutions =  Evolution::select("Evolutions.*", "Users.Name as CreatedByName")
                             ->join("Users","Users.UserID","=","Evolutions.CreatedUserID")
                             ->where("Evolutions.PeopleID", $id)
-                            ->orderBy("EvolutionID","DESC")
+                            ->orderBy("CreatedAt","DESC")
                             ->get();
                             
         return response()->json($evolutions);
