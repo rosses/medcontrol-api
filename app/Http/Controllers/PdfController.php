@@ -663,8 +663,10 @@ class PdfController extends Controller
             $weight = floatval($cert->Weight);
             $height = floatval($cert->Height);
             $m2 = ($height/100) * ($height/100);
-            $img = round(($weight / $m2) * 100) / 100;
-        } catch (Exception $e2) { }
+            $imc = round(($weight / $m2) * 100) / 100;
+        } catch (Exception $e2) {
+            $imc = 0;
+        }
 
 
         $edv = DB::select("
