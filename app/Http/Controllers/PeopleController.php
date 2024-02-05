@@ -48,7 +48,7 @@ class PeopleController extends Controller
             $rows = $rows->where("Peoples.HealthID", $request->HealthID);
         }
         
-        $rows = $rows->orderBy('Peoples.Name','ASC')->paginate(20)->get();
+        $rows = $rows->orderBy('Peoples.Name','ASC')->get()->paginate(20);
         return response()->json($rows);
     }
     public function create(Request $request) {
