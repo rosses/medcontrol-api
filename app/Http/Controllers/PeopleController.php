@@ -16,13 +16,15 @@ use App\Models\Order;
 use App\Models\Recipe;
 use App\Models\Surgery;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB; 
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 
 class PeopleController extends Controller
 {
     public function index(Request $request) {
+
+        $offset = ($request->has("page") ? $request->get("page") : 0);
         $rows = People::select(
             'Peoples.*',
             'Groups.Name as GroupName',
@@ -48,9 +50,9 @@ class PeopleController extends Controller
             $rows = $rows->where("Peoples.HealthID", $request->HealthID);
         }
         
-        $rows = $rows->orderBy('Peoples.Name','ASC')->get()->paginate(20);
+        $rows = $rows->orderBy('Peoples.Name','ASC')->offset($offset)->limit(15)->get(); 
         return response()->json($rows);
-    }
+    } 
     public function create(Request $request) {
 
         try {
