@@ -51,7 +51,30 @@ class PeopleController extends Controller
         }
         
         $rows = $rows->orderBy('Peoples.Name','ASC')->offset($offset)->limit(15)->get(); 
-        return response()->json($rows);
+
+        if ($request->Search!="" || $request->StatusID!="" || $request->HealthID!="")  {
+            $total = People::select("*");
+            if ($request->Search!="") {
+                $total = $total->where(function ($query) use ($request) {
+                    $query->where("Peoples.Name","like","%".$request->Search."%")
+                    ->orWhere("Peoples.Lastname","like","%".$request->Search."%");
+                });
+            }
+            if ($request->StatusID!="") {
+                $total = $total->where("Peoples.StatusID", $request->StatusID);
+            }
+            if ($request->HealthID!="") {
+                $rows = $rows->where("Peoples.HealthID", $request->HealthID);
+            }
+            $total = $total->count();
+        } else {
+            $total = People::count();
+        }
+
+        return response()->json([
+            "total" => $total,
+            "data" => $rows
+        ]);
     } 
     public function create(Request $request) {
 
@@ -444,9 +467,11 @@ class PeopleController extends Controller
 
         $packs = Certificate::select(
             'Certificates.*',
+            'CertificateTypes.Name as CertificateTypeName',
             'Dates.Date as Date',
             'Dates.Time as Time',
         )
+        ->leftJoin('CertificateTypes', 'CertificateTypes.CertificateTypeID', '=', 'Certificates.CertificateTypeID')
         ->leftJoin('Dates', 'Dates.DateID', '=', 'Certificates.DateID')
         ->where("Certificates.PeopleID",$id)
         ->orderBy("Certificates.DateID","DESC")

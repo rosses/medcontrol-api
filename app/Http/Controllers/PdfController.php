@@ -12,6 +12,7 @@ use App\Models\Exam;
 use App\Models\Order;
 use App\Models\Recipe;
 use App\Models\Surgery;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -605,6 +606,88 @@ class PdfController extends Controller
         $html2pdf->setDefaultFont('Arial');
         $html2pdf->pdf->setTitle("pdf ".$pdfname.".pdf");
         $html2pdf->writeHTML($content); 
+        $html2pdf->output("pdf ".$pdfname.".pdf");
+        die();
+
+    } 
+
+    public function getCertificateSingle($id) {
+        setlocale(LC_TIME, 'es_CL.UTF-8','esp');
+
+        $pdfname = "CERT_".$id."_".date("Ymd_hi");
+
+        $cert = Certificate::select(
+            'Certificates.*',
+            'CertificateTypes.Name as CertificateTypeName',
+            'CertificateTypes.Template as Template',
+            'Dates.Date as Date',
+            'Dates.Time as Time',
+            'Dates.AntAllergy',
+            'Dates.AntDrugs',
+            'Dates.AntSurgical',
+            'Dates.AntMedical',
+            'Peoples.Name as PeopleName',
+            'Peoples.Lastname as PeopleLastname',
+            'Peoples.CardCode as PeopleCardCode',
+            'Diagnosis.Name as DiagnosisName',
+            'Anthropometrys.Weight',
+            'Anthropometrys.Height',
+            'Anthropometrys.Temperature',
+            'Surgerys.Name as SurgeryName'
+        )
+        ->leftJoin('CertificateTypes', 'CertificateTypes.CertificateTypeID', '=', 'Certificates.CertificateTypeID')
+        ->leftJoin('Dates', 'Dates.DateID', '=', 'Certificates.DateID')
+        ->leftJoin('Peoples', 'Peoples.PeopleID', '=', 'Certificates.PeopleID')
+        ->leftJoin('Diagnosis', 'Diagnosis.DiagnosisID', '=', 'Dates.DiagnosisID')
+        ->leftJoin('Surgerys', 'Surgerys.SurgeryID', '=', 'Dates.SurgeryID')
+        ->leftJoin('Anthropometrys', 'Anthropometrys.DateID', '=', 'Dates.DateID')
+        ->where("Certificates.CertificateID",$id)
+        ->first();
+
+        $path = dirname(__FILE__)."/../../../resources/views/".$cert["Template"];
+        if (!file_exists($path)) {
+            throw new \Exception("not found template ".$path);
+        }
+        $fp = file_get_contents($path);
+        $dc = "";
+        if ($cert->DateAsSurgery) {
+            try {
+                $dc = implode("/",array_reverse(explode("-", substr($cert->DateAsSurgery,0,10))));
+            } catch (Exception $e2) { }
+        }
+
+        
+        $imc = 0;
+        try {
+            $weight = floatval($cert->Weight);
+            $height = floatval($cert->Height);
+            $m2 = ($height/100) * ($height/100);
+            $img = round(($weight / $m2) * 100) / 100;
+        } catch (Exception $e2) { }
+
+        $fp = str_replace("{{fecha_cirugia}}",$dc,$fp);
+        $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
+        $fp = str_replace("{{nombre}}",$cert->PeopleName." ".$cert->PeopleLastname,$fp);
+        $fp = str_replace("{{rut}}",$cert->PeopleCardCode,$fp); 
+        $fp = str_replace("{{allergy}}",$cert->AntAllergy,$fp); 
+        $fp = str_replace("{{drugs}}",$cert->AntDrugs,$fp); 
+        $fp = str_replace("{{medical}}",$cert->AntMedical,$fp); 
+        $fp = str_replace("{{surgical}}",$cert->AntSurgical,$fp); 
+        $fp = str_replace("{{surgery}}",$cert->SurgeryName,$fp); 
+        $fp = str_replace("{{diagnostico}}",$cert->DiagnosisName,$fp); 
+        $fp = str_replace("{{imc}}",$imc,$fp); 
+        $fp = str_replace("{{weight}}",$cert->Weight. "kgs",$fp); 
+        $fp = str_replace("{{height}}",$cert->Height." cms",$fp); 
+        $fp = str_replace("{{fecha_es}}",strftime('%A %e de %B de %Y', strtotime($cert->CreatedAt)),$fp); 
+
+
+        //210x279 
+        $md5 = md5(time());
+        $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', 5);
+        $html2pdf->pdf->SetDisplayMode('fullpage');
+        $html2pdf->setDefaultFont('Arial');
+        $html2pdf->pdf->setTitle("pdf ".$pdfname.".pdf");
+        $html2pdf->writeHTML($fp); 
         $html2pdf->output("pdf ".$pdfname.".pdf");
         die();
 

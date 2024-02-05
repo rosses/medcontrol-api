@@ -234,6 +234,7 @@ Route::group([
         Route::get('data-orders/{id}', 'PdfController@getDataOrders');
         Route::get('recipes/{id}', 'PdfController@getRecipes');
         Route::get('certificates/{id}', 'PdfController@getCertificates');
+        Route::get('certs-single/{id}', 'PdfController@getCertificateSingle');
         Route::get('people/{id}', 'PdfController@getPeople');
     });
 });
