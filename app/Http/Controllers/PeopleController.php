@@ -66,7 +66,7 @@ class PeopleController extends Controller
                 $total = $total->where("Peoples.StatusID", "=", $request->StatusID);
             }
             if ($request->HealthID!="") {
-                $total = $rows->where("Peoples.HealthID", "=", $request->HealthID);
+                $total = $total->where("Peoples.HealthID", "=", $request->HealthID);
             }
             $total = $total->count();
         } else {
