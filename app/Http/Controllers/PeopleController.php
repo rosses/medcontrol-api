@@ -42,16 +42,18 @@ class PeopleController extends Controller
                     ->orWhere("Peoples.Lastname","like","%".$request->Search."%");
             });
         }
-        
         if ($request->StatusID!="") {
-            $rows = $rows->where("Peoples.StatusID", $request->StatusID);
+            $rows = $rows->where("Peoples.StatusID", "=", $request->StatusID);
         }
         if ($request->HealthID!="") {
-            $rows = $rows->where("Peoples.HealthID", $request->HealthID);
+            $rows = $rows->where("Peoples.HealthID", "=", $request->HealthID);
         }
         
-        $rows = $rows->orderBy('Peoples.Name','ASC')->offset($offset)->limit(15)->get(); 
+        $rows = $rows->orderBy('Peoples.Name','ASC')->offset($offset)->limit(15);
+        $rows = $rows->get(); 
 
+
+        // Pagination data
         if ($request->Search!="" || $request->StatusID!="" || $request->HealthID!="")  {
             $total = People::select("*");
             if ($request->Search!="") {
@@ -61,19 +63,20 @@ class PeopleController extends Controller
                 });
             }
             if ($request->StatusID!="") {
-                $total = $total->where("Peoples.StatusID", $request->StatusID);
+                $total = $total->where("Peoples.StatusID", "=", $request->StatusID);
             }
             if ($request->HealthID!="") {
-                $rows = $rows->where("Peoples.HealthID", $request->HealthID);
+                $total = $rows->where("Peoples.HealthID", "=", $request->HealthID);
             }
             $total = $total->count();
         } else {
             $total = People::count();
         }
+        // End pagination data
 
         return response()->json([
             "total" => $total,
-            "data" => $rows
+            "data" => $rows 
         ]);
     } 
     public function create(Request $request) {
