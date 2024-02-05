@@ -662,6 +662,9 @@ class PdfController extends Controller
         try {
             $weight = floatval($cert->Weight);
             $height = floatval($cert->Height);
+            if ($weight == 0 || $height == 0) {
+                throw new \Exception("Division Zero");
+            }
             $m2 = ($height/100) * ($height/100);
             $imc = round(($weight / $m2) * 100) / 100;
         } catch (Exception $e2) {
