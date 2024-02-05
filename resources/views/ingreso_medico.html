@@ -67,25 +67,37 @@
     <hr />
     Nombre: {{nombre}}<br />
     Rut: {{rut}}<br />  
-    Diagnóstico: {{diagnostico}}<br />  
-    Peso: {{weight}}<br />  
-    Talla: {{height}}<br />  
-    IMC: {{imc}}<br />  
-    Ant. Fármacos: {{drugs}}<br />  
-    Ant. Medicos: {{medical}}<br />  
-    Ant. Alergias: {{allergy}}<br />  
-    Ant. Quirúrgicos: {{surgical}}<br />  
-    <br /><br /><br />
-    Certifico que el paciente mencionado es portador de un(a)  
-    <b>{{diagnostico}}</b> con enfermedades asociadas, motivo por el cual tiene indicación
-    de <b>{{surgery}}</b> como parte de su tratamiento
-    multidisciplinario.
-    <br /><br />
-    Se extiende el presente certificado para los fines que el paciente estime
-    conveniente.
-    
+    Diagnóstico: {{diagnostico}}<br />   
+    Fecha: {{fecha_es}}<br />   
+    <br />
+    <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="width-250">
+                Peso: {{weight}}<br />  
+                Talla: {{height}}<br />  
+                IMC: {{imc}}<br />  
+
+                Ant. Fármacos: {{drugs}}<br />  
+                Ant. Medicos: {{medical}}<br />  
+                Ant. Alergias: {{allergy}}<br />  
+                Ant. Quirúrgicos: {{surgical}}<br />
+
+            </td>
+            <td class="width-250">
+
+
+                Ciudad: {{city}}<br />  
+                Especialistas: <br />
+                {{medicos}}<br />  
+                Exámenes: <br />  
+                {{txt_examenes}}
+            </td>
+        </tr>
+    </table>
+    <br />     
     <br /><br />
     Atentamente,
+
 
 
     <page_footer>

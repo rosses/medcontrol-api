@@ -629,6 +629,7 @@ class PdfController extends Controller
             'Peoples.Name as PeopleName',
             'Peoples.Lastname as PeopleLastname',
             'Peoples.CardCode as PeopleCardCode',
+            'Peoples.City as City',
             'Diagnosis.Name as DiagnosisName',
             'Anthropometrys.Weight',
             'Anthropometrys.Height',
@@ -665,6 +666,49 @@ class PdfController extends Controller
             $img = round(($weight / $m2) * 100) / 100;
         } catch (Exception $e2) { }
 
+
+        $edv = DB::select("
+        SELECT		E.ExamID,  ET.Name ExamTypeName, E.Name, ED.ExamDataType, ED.Name ExamDataName, EDV.Value 
+        FROM		Exams as E 
+        INNER JOIN	ExamTypes ET ON ET.ExamTypeID = E.ExamTypeID
+        INNER JOIN	ExamDatas ED ON ED.ExamID = E.ExamID 
+        INNER JOIN	ExamDataValues EDV ON EDV.ExamDataID = ED.ExamDataID 
+        INNER JOIN  Orders O ON O.DateID = '".$cert->DateID."' AND O.OrderID = EDV.OrderID 
+        WHERE		E.Active = 1 
+        ORDER BY	ET.Name ASC, EDV.ExamDataValueID DESC
+        ");
+        $edv = json_decode(json_encode($edv), true);
+        $results = [];
+        foreach ($edv as $rr) {
+            if (!isset($results[$rr["ExamTypeName"]][$rr["ExamDataName"]])) { // Only newest result
+                if ($rr["ExamDataType"]=="boolean") {
+                    if ($rr["Value"]=="1") {
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "OK";
+                    }
+                    else {
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "NO-OK";
+                    }
+                }
+                else if ($rr["ExamDataType"]=="text") { 
+                    $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = $rr["Value"];
+                } 
+                else if ($rr["ExamDataType"]=="number") { 
+                    $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = round($rr["Value"],2);
+                }
+            }
+        }
+
+        $txt_examenes = "";
+        foreach ($results as $type=>$d) {
+            $txt_examenes .= "\n".mb_strtoupper($type,'utf-8')."\n";
+            foreach ($d as $field=>$val) {
+                $txt_examenes .= "".$field.": ".$val."\n";
+            }
+        } 
+
+        $txt_medicos = "";
+
+
         $fp = str_replace("{{fecha_cirugia}}",$dc,$fp);
         $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
         $fp = str_replace("{{nombre}}",$cert->PeopleName." ".$cert->PeopleLastname,$fp);
@@ -678,6 +722,9 @@ class PdfController extends Controller
         $fp = str_replace("{{imc}}",$imc,$fp); 
         $fp = str_replace("{{weight}}",$cert->Weight. "kgs",$fp); 
         $fp = str_replace("{{height}}",$cert->Height." cms",$fp); 
+        $fp = str_replace("{{city}}",$cert->City,$fp); 
+        $fp = str_replace("{{txt_examenes}}",$txt_examenes,$fp); 
+        $fp = str_replace("{{txt_medicos}}",$txt_medicos,$fp); 
         $fp = str_replace("{{fecha_es}}",strftime('%A %e de %B de %Y', strtotime($cert->CreatedAt)),$fp); 
 
 
