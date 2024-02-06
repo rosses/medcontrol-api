@@ -853,10 +853,7 @@ class PdfController extends Controller
         Rut: '.$interview->CardCode.'<br />
         Diagnóstico: '.$interview->Diagnosis.'<br />
         <h4>Interconsulta</h4>
-        <b>Especialidad</b>'.$interview->SpecialistName.'<br><br>
-        ';
-
-        $content .= $interview->Description.'<br />'.$interview->WantText.'<br /></page>';   
+        <b>Especialidad: </b> '.$interview->SpecialistName.' '.$interview->Description.'<br />'.$interview->WantText.'<br /></page>';   
     
 
         //210x279 
