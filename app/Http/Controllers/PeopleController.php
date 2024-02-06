@@ -291,6 +291,16 @@ class PeopleController extends Controller
                             ->where("ExamDatas.ExamDataType","=","boolean")
                             ->get();
 
+        $people["RequestedInterviews"] = Interview::select(
+                                        "Interviews.*",
+                                        "Specialists.Name as SpecialistName"
+                                     )
+                            ->leftJoin("Specialists","Specialists.SpecialistID","=","Interviews.SpecialistID")
+                            ->where("Interviews.PeopleID",$id)
+                            ->where("Interviews.VB","1")
+                            ->get();
+
+
         return response()->json($people); 
     }
     public function datesForPeople($id) {
@@ -411,6 +421,16 @@ class PeopleController extends Controller
                             ->get();
                             
         return response()->json($evolutions);
+    }
+    public function interviewsForPeople($id) {
+        $interviews =  Interview::select("Interviews.*", "Users.Name as CreatedByName","Specialists.Name as SpecialistName")
+                            ->join("Users","Users.UserID","=","Interviews.CreatedUserID")
+                            ->join("Specialists","Specialists.SpecialistID","=","Interviews.SpecialistID")
+                            ->where("Interviews.PeopleID", $id)
+                            ->orderBy("CreatedAt","DESC")
+                            ->get();
+                            
+        return response()->json($interviews);
     }
     public function recipesForPeople($id) {
 

@@ -221,6 +221,7 @@ class DateController extends Controller
                     $interview->Description = $r["Description"];
                     $interview->DiagnosisID = $r["DiagnosisID"];
                     $interview->WantText = $r["WantText"];
+                    $interview->VB = (isset($r["VB"]) && $r["VB"] ? 1 : 0);
                     $interview->DateID = $date->DateID;
                     $interview->PeopleID = $date->PeopleID;
                     $interview->save();

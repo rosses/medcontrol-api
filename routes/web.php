@@ -178,6 +178,7 @@ Route::group([
         Route::get('/{id}/exams', 'PeopleController@examsForPeople');
         Route::get('/{id}/recipes', 'PeopleController@recipesForPeople');
         Route::get('/{id}/certificates', 'PeopleController@certificatesForPeople');
+        Route::get('/{id}/interviews', 'PeopleController@interviewsForPeople');
         Route::get('/{id}/evolutions', 'PeopleController@evolutionsForPeople');
         Route::get('/{id}/text', 'PeopleController@getText');
         Route::post('/{id}/change-status', 'PeopleController@changeStatus');
@@ -216,6 +217,21 @@ Route::group([
     ], function($router) { 
         Route::post('/', 'EvolutionController@create'); 
         Route::delete('/{id}', 'EvolutionController@delete');
+    });
+
+    Route::group([
+        'prefix' => 'recipe',
+        'middleware' => 'auth'
+    ], function($router) { 
+        Route::delete('/{id}', 'RecipeController@delete');
+    });
+
+    Route::group([
+        'prefix' => 'interview',
+        'middleware' => 'auth'
+    ], function($router) { 
+        Route::delete('/{id}', 'InterviewController@delete');
+        Route::get('/{id}/vb', 'InterviewController@vb');
     });
 
     /* Auth */
