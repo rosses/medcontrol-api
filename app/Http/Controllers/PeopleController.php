@@ -24,7 +24,7 @@ class PeopleController extends Controller
 {
     public function index(Request $request) {
 
-        $offset = ($request->has("page") ? $request->get("page") : 0);
+        $offset = ($request->has("page") && $request->get("page")>1 ? ($request->get("page") * 15) : 0);
         $rows = People::select(
             'Peoples.*',
             'Groups.Name as GroupName',
