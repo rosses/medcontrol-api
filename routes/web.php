@@ -251,6 +251,7 @@ Route::group([
         Route::get('recipes/{id}', 'PdfController@getRecipes');
         Route::get('certificates/{id}', 'PdfController@getCertificates');
         Route::get('certs-single/{id}', 'PdfController@getCertificateSingle');
+        Route::get('certs-interview/{id}', 'PdfController@getInterview');
         Route::get('people/{id}', 'PdfController@getPeople');
     });
 });
