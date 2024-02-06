@@ -755,13 +755,14 @@ class PdfController extends Controller
             "Interviews.*", 
             "Users.Name as CreatedByName",
             "Specialists.Name as SpecialistName",
-            "People.Name as Name",
-            "People.CardCode as CardCode",
+            "Peoples.Name as Name",
+            "Peoples.CardCode as CardCode",
             "Diagnosis.Name as Diagnosis"
         )
         ->join("Users","Users.UserID","=","Interviews.CreatedUserID")
         ->join("Specialists","Specialists.SpecialistID","=","Interviews.SpecialistID")
         ->leftJoin("Dates","Dates.DateID","=","Interviews.DateID")
+        ->leftJoin("Diagnosis","Diagnosis.DiagnosisID","=","Dates.DiagnosisID")
         ->leftJoin("Peoples","Peoples.PeopleID","=","Interviews.PeopleID")
         ->where("Interviews.InterviewID", $id)
         ->orderBy("CreatedAt","DESC")
