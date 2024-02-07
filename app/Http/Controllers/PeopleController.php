@@ -115,6 +115,9 @@ class PeopleController extends Controller
                 $row->Obs = ($request->Obs ? $request->Obs : '');
                 $row->GroupID = 1;
                 $row->StatusID = 1;
+                if ($request->Genre) {
+                    $row->Genre = $request->Genre;
+                }
                 $row->BudgetPlace = "CLINICA PV";
                 $row->CreatedUserID = JWTAuth::user()->UserID;
                 $row->CreatedAt = date("Y-m-d H:i:s");
@@ -521,6 +524,9 @@ class PeopleController extends Controller
         $row->Phone2 = $request->Phone2;
         $row->Profession = $request->Profession;
         $row->Obs = $request->Obs;
+        if (isset($request->Genre)) {
+            $row->Genre = $request->Genre;
+        }
         $row->BudgetPlace = $request->BudgetPlace;
         //$row->BudgetStatus = $request->BudgetStatus;
         $row->BudgetStatusID = $request->BudgetStatusID;
