@@ -161,6 +161,7 @@ class PdfController extends Controller
                 height: 5px;
                 border-collapse: collapse;
             }
+            h4 { font-style: italic; }
             --> 
         </style>';
         
@@ -561,6 +562,7 @@ class PdfController extends Controller
                 height: 5px;
                 border-collapse: collapse;
             }
+            h4 { font-style: italic; }
             --> 
         </style>';
           
