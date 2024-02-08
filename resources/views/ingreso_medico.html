@@ -50,48 +50,71 @@
     <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
         <td class="width-330">
-            <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
-            <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-            Cirugía Digestiva y Obesidad</h4>
-            <br /><br />
-        </td>
-
-        <td class="width-160" style="text-align:right;">
             <img src="logosalinas.png" width="120" />
-        </td>
+        </td> 
     </tr>
     </table>
     <hr />
-    <b>
-    NOMBRE: {{nombre}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;EDAD: {{edad}}<br />
+    <b>NOMBRE: {{nombre}}<br />
     RUT: {{rut}}<br />  
-    DIAGNÓSTICO: {{diagnostico}}<br />   
-    FECHA: {{fecha_es}}<br />   
+    DIAGNÓSTICO: {{diagnostico}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fecha: {{fecha}}<br />
     </b>
     <br />
-    <table width="100%" cellpadding="0" cellspacing="0">
+    <table width="100%" cellpadding="3" cellspacing="0" border="1">
         <tr>
-            <td class="width-250">
-                Peso: {{weight}}<br />  
-                Talla: {{height}}<br />  
-                IMC: {{imc}}<br />  
-
-                Ant. Fármacos: {{drugs}}<br />  
-                Ant. Medicos: {{medical}}<br />  
-                Ant. Alergias: {{allergy}}<br />  
-                Ant. Quirúrgicos: {{surgical}}<br />
-                Exámen físico: {{obs}}
-            </td>
-            <td class="width-250">
-                Ciudad: {{city}}<br />  
-                Especialistas: <br />
-                {{txt_medicos}}<br />  
-                Exámenes: <br />  
-                {{txt_examenes}}
-            </td>
+            <td class="width-75"><b>PESO:</b></td>
+            <td class="width-75">{{weight}}</td>
+            <td class="width-75"><b>TALLA:</b></td>
+            <td class="width-75">{{height}}</td>
+            <td class="width-75"><b>IMC:</b></td>
+            <td class="width-75">{{imc}}</td>
         </tr>
     </table>
-    <br />     
+
+    <h5 style="font-style:italic;">Rp.</h5>
+
+    <h5>ANTECEDENTES</h5>
+
+    <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="width-120">Ciudad:</td>
+            <td class="width-200">{{city}}</td>
+        </tr>
+        <tr>
+            <td class="width-120">Profesión:</td>
+            <td class="width-200">{{profession}}</td>
+        </tr>
+        <tr>
+            <td class="width-120">Médicos:</td>
+            <td class="width-200">{{medical}}</td>
+        </tr>
+        <tr>
+            <td class="width-120">Fármacos:</td>
+            <td class="width-200">{{drugs}}</td>
+        </tr>
+        <tr>
+            <td class="width-120">Quirúrgicos:</td>
+            <td class="width-200">{{surgical}}</td>
+        </tr>
+        <tr>
+            <td class="width-120">Alergías:</td>
+            <td class="width-200">{{allergy}}</td>
+        </tr>
+    </table>
+    <br />
+    <h5>EXÁMEN FÍSICO</h5>
+    <p>{{obs}}</p>
+
+    <h5>ESPECIALISTAS</h5>
+    <table width="100%" cellpadding="0" cellspacing="0">
+    {{txt_medicos}}
+    </table>
+
+    <h5>EXÁMENES</h5>
+    <table width="100%" cellpadding="0" cellspacing="0">
+    {{txt_examenes}}
+    </table>
+
     <br /><br />
     Atentamente,
 

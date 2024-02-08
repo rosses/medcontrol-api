@@ -629,6 +629,7 @@ class PdfController extends Controller
             'Peoples.Genre as PeopleGenre',
             'Peoples.Lastname as PeopleLastname',
             'Peoples.CardCode as PeopleCardCode',
+            'Peoples.Profession as Profession',
             'Peoples.City as City',
             'Peoples.Birthday as Birthday',
             'Diagnosis.Name as DiagnosisName',
@@ -705,14 +706,22 @@ class PdfController extends Controller
 
         $txt_examenes = "";
         foreach ($results as $type=>$d) {
-            $txt_examenes .= "\n".mb_strtoupper($type,'utf-8')."\n";
+            $txt_examenes .= '<tr><td colspan="2">'.mb_strtoupper($type,'utf-8').'</td></tr>';
             foreach ($d as $field=>$val) {
-                $txt_examenes .= "".$field.": ".$val."\n";
+                $txt_examenes .= '<tr><td class="width-200">'.$field.'</td><td class="width-200">'.$val.'</td></tr>';
             }
         } 
 
 
-        $txt_medicos = "";
+        $txt_medicos = ""; 
+        $inv = Interview::select("Interviews.*","Specialists.Name as SpecialistName")
+                ->leftJoin("Specialists","Specialists.SpecialistID","=","Interviews.SpecialistID")
+                ->where("DateID",$cert->DateID)
+                ->get();
+        foreach ($inv as $idoc) {
+            $txt_medicos .= '<tr><td class="width-200">'.$idoc->SpecialistName.'</td><td class="width-200">'.$idoc->Description.'</td></tr>';
+        }
+
         $ccc = $cert->PeopleCardCode;
         $ccc = str_replace(["-","."],["",""], $ccc);
         $rut = number_format( substr ( $ccc, 0 , -1 ) , 0, "", ".") . '-' . substr ( $ccc, strlen($ccc) -1 , 1 );
@@ -725,10 +734,13 @@ class PdfController extends Controller
         if ($cert->Genre=="F") {
             $ella_el = "la";
         }
+
+
         
         $fp = str_replace("{{edad}}",$edad->format("%Y")." años",$fp);
         $fp = str_replace("{{ella_el}}",$ella_el,$fp);
         $fp = str_replace("{{descripcion}}",$cert->Description,$fp);
+        $fp = str_replace("{{profession}}",$cert->Profession,$fp);
         $fp = str_replace("{{fecha_cirugia}}",$dc,$fp);
         $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
         $fp = str_replace("{{nombre}}",$cert->PeopleName." ".$cert->PeopleLastname,$fp);
