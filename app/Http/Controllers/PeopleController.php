@@ -49,7 +49,7 @@ class PeopleController extends Controller
             $rows = $rows->where("Peoples.HealthID", "=", $request->HealthID);
         }
         
-        $rows = $rows->orderBy('Peoples.Name','ASC')->offset($offset)->limit(15);
+        $rows = $rows->orderBy('Peoples.CreatedAt','DESC')->offset($offset)->limit(15);
         $rows = $rows->get(); 
 
 
