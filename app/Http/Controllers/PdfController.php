@@ -176,7 +176,7 @@ class PdfController extends Controller
                     <td class="width-330">
                         <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
                         <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                        Cirugía Digestiva y Obesidad</h4>
+                        Cirugía Digestiva y Obesidad</h4><br /><br />
                     </td>
     
                     <td class="width-160" style="text-align:right;">
@@ -186,9 +186,9 @@ class PdfController extends Controller
                 </table>
                 <hr />
                 <b>
-                Nombre: '.$dates["Name"].'<br />
-                Rut: '.$dates["CardCode"].'<br />
-                Diagnóstico: '.$dates["Diagnosis"].'<br />
+                NOMBRE: '.$dates["Name"].'<br />
+                RUT: '.$dates["CardCode"].'<br />
+                DIAGNÓSTICO: '.$dates["Diagnosis"].'<br />
                 </b>
                 <h4>Rp</h4>
                 <b>'.$datas["ExamTypeName"].'</b><br><br>
@@ -356,7 +356,7 @@ class PdfController extends Controller
             <td class="width-250">
                 <h5 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h5>
                 <h5 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                Cirugía Digestiva y Obesidad</h5>
+                Cirugía Digestiva y Obesidad</h5><br /><br />
             </td>
             <td class="width-330">
                 Ficha del paciente
@@ -573,7 +573,7 @@ class PdfController extends Controller
             <td class="width-330">
                 <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
                 <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                Cirugía Digestiva y Obesidad</h4>
+                Cirugía Digestiva y Obesidad</h4><br /><br />
             </td>
 
             <td class="width-160" style="text-align:right;">
@@ -583,9 +583,9 @@ class PdfController extends Controller
         </table>
         <hr />
         <b>
-        Nombre: '.$opt["Name"].'<br />
-        Rut: '.$opt["CardCode"].'<br />
-        Diagnóstico: '.$opt["Diagnosis"].'<br />
+        NOMBRE: '.$opt["Name"].'<br />
+        RUT: '.$opt["CardCode"].'<br />
+        DIAGNÓSTICO: '.$opt["Diagnosis"].'<br />
         </b>
         <h4>Rp</h4> 
         ';
@@ -628,6 +628,7 @@ class PdfController extends Controller
             'Peoples.Lastname as PeopleLastname',
             'Peoples.CardCode as PeopleCardCode',
             'Peoples.City as City',
+            'Peoples.Birthday as Birthday',
             'Diagnosis.Name as DiagnosisName',
             'Anthropometrys.Weight',
             'Anthropometrys.Height',
@@ -710,12 +711,20 @@ class PdfController extends Controller
         } 
 
         $txt_medicos = "";
+        $ccc = $cert->PeopleCardCode;
+        $ccc = str_replace(["-","."],["",""], $ccc);
+        $rut = number_format( substr ( $ccc, 0 , -1 ) , 0, "", ".") . '-' . substr ( $ccc, strlen($ccc) -1 , 1 );
 
-
+        $fecha_nac = new \DateTime(date('Y/m/d',strtotime($cert->Birthday))); 
+        $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
+        $edad = date_diff($fecha_hoy,$fecha_nac); 
+        
+        $fp = str_replace("{{edad}}",$edad->format("%Y")." años",$fp);
+        $fp = str_replace("{{descripcion}}",$cert->Description,$fp);
         $fp = str_replace("{{fecha_cirugia}}",$dc,$fp);
         $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
         $fp = str_replace("{{nombre}}",$cert->PeopleName." ".$cert->PeopleLastname,$fp);
-        $fp = str_replace("{{rut}}",$cert->PeopleCardCode,$fp); 
+        $fp = str_replace("{{rut}}",$rut,$fp); 
         $fp = str_replace("{{allergy}}",$cert->AntAllergy,$fp); 
         $fp = str_replace("{{drugs}}",$cert->AntDrugs,$fp); 
         $fp = str_replace("{{medical}}",$cert->AntMedical,$fp); 
@@ -835,6 +844,7 @@ class PdfController extends Controller
                 <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
                 <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
                 Cirugía Digestiva y Obesidad
+                </h4><br /><br />
             </td>
 
             <td class="width-160" style="text-align:right;">
@@ -844,13 +854,13 @@ class PdfController extends Controller
         </table>
         <hr />
         <b>
-        Nombre: '.$interview->Name.'<br />
-        Rut: '.$interview->CardCode.'<br />
-        Diagnóstico: '.$interview->Diagnosis.'<br />
+        NOMBRE: '.$interview->Name.'<br />
+        RUT: '.$interview->CardCode.'<br />
+        DIAGNÓSTICO: '.$interview->Diagnosis.'<br />
         </b>
         <h4>Interconsulta</h4>
         <b>Especialidad: </b> '.$interview->SpecialistName.' '.$interview->Description.'<br />'.$interview->WantText.'<br /></page>';   
-    
+        
 
         //210x279 
         $md5 = md5(time());
