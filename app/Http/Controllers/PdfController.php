@@ -185,9 +185,11 @@ class PdfController extends Controller
                 </tr>
                 </table>
                 <hr />
+                <b>
                 Nombre: '.$dates["Name"].'<br />
                 Rut: '.$dates["CardCode"].'<br />
                 Diagnóstico: '.$dates["Diagnosis"].'<br />
+                </b>
                 <h4>Rp</h4>
                 <b>'.$datas["ExamTypeName"].'</b><br><br>
                 ';
@@ -580,9 +582,11 @@ class PdfController extends Controller
         </tr>
         </table>
         <hr />
+        <b>
         Nombre: '.$opt["Name"].'<br />
         Rut: '.$opt["CardCode"].'<br />
         Diagnóstico: '.$opt["Diagnosis"].'<br />
+        </b>
         <h4>Rp</h4> 
         ';
 
@@ -839,9 +843,11 @@ class PdfController extends Controller
         </tr>
         </table>
         <hr />
+        <b>
         Nombre: '.$interview->Name.'<br />
         Rut: '.$interview->CardCode.'<br />
         Diagnóstico: '.$interview->Diagnosis.'<br />
+        </b>
         <h4>Interconsulta</h4>
         <b>Especialidad: </b> '.$interview->SpecialistName.' '.$interview->Description.'<br />'.$interview->WantText.'<br /></page>';   
     
