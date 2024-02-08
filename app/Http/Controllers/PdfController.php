@@ -495,10 +495,12 @@ class PdfController extends Controller
             "data" => $recipes, 
             "CardCode" => $packs[0]->PeopleCardCode
         ];
+        $opt["Name"] = "";
         if ($packs[0]->PeopleName != "" && $packs[0]->PeopleLastname != "") {
             $opt["Name"] = $packs[0]->PeopleName." ".$packs[0]->PeopleLastname;
             $pdfname = $packs[0]->PeopleName." ".$packs[0]->PeopleLastname;
         }
+        $opt["Diagnosis"] = "";
         if ($packs[0]->DiagnosisName != "") {
             $opt["Diagnosis"] = $packs[0]->DiagnosisName;
         }
