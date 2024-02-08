@@ -624,6 +624,7 @@ class PdfController extends Controller
             'Dates.AntDrugs',
             'Dates.AntSurgical',
             'Dates.AntMedical',
+            'Dates.Obs',
             'Peoples.Name as PeopleName',
             'Peoples.Genre as PeopleGenre',
             'Peoples.Lastname as PeopleLastname',
@@ -742,8 +743,9 @@ class PdfController extends Controller
         $fp = str_replace("{{weight}}",$cert->Weight. "kgs",$fp); 
         $fp = str_replace("{{height}}",$cert->Height." cms",$fp); 
         $fp = str_replace("{{city}}",$cert->City,$fp); 
+        $fp = str_replace("{{obs}}",$cert->Obs,$fp); 
         $fp = str_replace("{{txt_examenes}}",$txt_examenes,$fp); 
-        $fp = str_replace("{{txt_medicos}}",$txt_medicos,$fp); 
+        $fp = str_replace("{{txt_medicos}}",$txt_medicos,$fp);  
         $fp = str_replace("{{fecha_es}}",strftime('%A %e de %B de %Y', strtotime($cert->CreatedAt)),$fp); 
 
 
