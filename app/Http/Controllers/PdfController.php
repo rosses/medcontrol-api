@@ -176,11 +176,7 @@ class PdfController extends Controller
                     <td class="width-330">
                         <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
                         <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                        Cirugía Digestiva<br />P. Universidad Católica de Chile</h4>
-                        <br />
-                        Bypass gástrico, gastrectomía en manga<br />
-                        Reflujo gastroesofágico, hernias vía laparoscópica<br />
-                        Oncología tracto gastrointesnal
+                        Cirugía Digestiva y Obesidad</h4>
                     </td>
     
                     <td class="width-160" style="text-align:right;">
@@ -358,7 +354,7 @@ class PdfController extends Controller
             <td class="width-250">
                 <h5 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h5>
                 <h5 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                Cirugía Digestiva<br />P. Universidad Católica de Chile</h5>
+                Cirugía Digestiva y Obesidad</h5>
             </td>
             <td class="width-330">
                 Ficha del paciente
@@ -575,11 +571,7 @@ class PdfController extends Controller
             <td class="width-330">
                 <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
                 <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                Cirugía Digestiva<br />P. Universidad Católica de Chile</h4>
-                <br />
-                Bypass gástrico, gastrectomía en manga<br />
-                Reflujo gastroesofágico, hernias vía laparoscópica<br />
-                Oncología tracto gastrointesnal
+                Cirugía Digestiva y Obesidad</h4>
             </td>
 
             <td class="width-160" style="text-align:right;">
@@ -838,11 +830,7 @@ class PdfController extends Controller
             <td class="width-330">
                 <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
                 <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                Cirugía Digestiva<br />P. Universidad Católica de Chile</h4>
-                <br />
-                Bypass gástrico, gastrectomía en manga<br />
-                Reflujo gastroesofágico, hernias vía laparoscópica<br />
-                Oncología tracto gastrointesnal
+                Cirugía Digestiva y Obesidad
             </td>
 
             <td class="width-160" style="text-align:right;">
