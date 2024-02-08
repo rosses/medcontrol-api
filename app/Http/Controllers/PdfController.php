@@ -625,6 +625,7 @@ class PdfController extends Controller
             'Dates.AntSurgical',
             'Dates.AntMedical',
             'Peoples.Name as PeopleName',
+            'Peoples.Genre as PeopleGenre',
             'Peoples.Lastname as PeopleLastname',
             'Peoples.CardCode as PeopleCardCode',
             'Peoples.City as City',
@@ -655,7 +656,6 @@ class PdfController extends Controller
                 $dc = implode("/",array_reverse(explode("-", substr($cert->DateAsSurgery,0,10))));
             } catch (Exception $e2) { }
         }
-
         
         $imc = 0;
         try {
@@ -710,6 +710,7 @@ class PdfController extends Controller
             }
         } 
 
+
         $txt_medicos = "";
         $ccc = $cert->PeopleCardCode;
         $ccc = str_replace(["-","."],["",""], $ccc);
@@ -718,8 +719,14 @@ class PdfController extends Controller
         $fecha_nac = new \DateTime(date('Y/m/d',strtotime($cert->Birthday))); 
         $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
         $edad = date_diff($fecha_hoy,$fecha_nac); 
+
+        $ella_el = "el";
+        if ($cert->Genre=="F") {
+            $ella_el = "la";
+        }
         
         $fp = str_replace("{{edad}}",$edad->format("%Y")." años",$fp);
+        $fp = str_replace("{{ella_el}}",$ella_el,$fp);
         $fp = str_replace("{{descripcion}}",$cert->Description,$fp);
         $fp = str_replace("{{fecha_cirugia}}",$dc,$fp);
         $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
