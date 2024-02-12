@@ -53,7 +53,12 @@ COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 
 RUN echo 'pm = static' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
     echo 'pm.max_children = 15' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'pm.max_requests = 500' >> /usr/local/etc/php-fpm.d/zz-docker.conf    
+    echo 'pm.max_requests = 500' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
+    echo 'catch_workers_output = yes' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    echo 'php_admin_flag[log_errors] = on' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    echo 'php_admin_flag[display_errors] = off' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    echo 'php_admin_value[error_reporting] = E_ALL & ~E_NOTICE & ~E_WARNING & ~E_STRICT & ~E_DEPRECATED' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    echo 'php_admin_value[error_log] = /var/log/error.log' >> /usr/local/etc/php-fpm.d/zz-docker.conf
 
 EXPOSE 80
 
