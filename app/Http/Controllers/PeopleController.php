@@ -526,7 +526,6 @@ class PeopleController extends Controller
             $row->Genre = $request->Genre;
         }
         $row->BudgetPlace = $request->BudgetPlace;
-        //$row->BudgetStatus = $request->BudgetStatus;
         $row->BudgetStatusID = $request->BudgetStatusID;
         $row->save();
         return response()->json($row, 200);
