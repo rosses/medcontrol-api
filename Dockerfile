@@ -51,6 +51,10 @@ RUN sed -i 's/output_buffering = 4096/output_buffering = 65535/g' "$PHP_INI_DIR/
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf 
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 
+RUN echo 'pm = static' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
+    echo 'pm.max_children = 15' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    echo 'pm.max_requests = 500' >> /usr/local/etc/php-fpm.d/zz-docker.conf    
+
 EXPOSE 80
 
 CMD ["/usr/bin/supervisord","-n","-c","/etc/supervisor/supervisord.conf"]
