@@ -308,6 +308,7 @@ class DateController extends Controller
 
             return response()->json([
                 "success" => true,
+                "DateID" => $date->DateID,
                 "orders" => $orders,
                 "interviews" => $interviews,
                 "recipes" => $recipes,

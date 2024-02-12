@@ -39,7 +39,8 @@ class PeopleController extends Controller
         if ($request->Search!="") {
             $rows = $rows->where(function ($query) use ($request) {
                 $query->where("Peoples.Name","like","%".$request->Search."%")
-                    ->orWhere("Peoples.Lastname","like","%".$request->Search."%");
+                    ->orWhere("Peoples.Lastname","like","%".$request->Search."%")
+                    ->orWhereRaw("CONCAT(Peoples.Name, ' ', Peoples.Lastname) like '%".$request->Search."%'");
             });
         }
         if ($request->StatusID!="") {
@@ -59,7 +60,8 @@ class PeopleController extends Controller
             if ($request->Search!="") {
                 $total = $total->where(function ($query) use ($request) {
                     $query->where("Peoples.Name","like","%".$request->Search."%")
-                    ->orWhere("Peoples.Lastname","like","%".$request->Search."%");
+                    ->orWhere("Peoples.Lastname","like","%".$request->Search."%")
+                    ->orWhereRaw("CONCAT(Peoples.Name, ' ', Peoples.Lastname) like '%".$request->Search."%'");
                 });
             }
             if ($request->StatusID!="") {

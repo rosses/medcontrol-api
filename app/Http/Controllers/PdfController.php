@@ -185,8 +185,7 @@ class PdfController extends Controller
                 </tr>
                 </table>
                 <hr />
-                <b>
-                NOMBRE: '.$dates["Name"].'<br />
+                <b>NOMBRE: '.$dates["Name"].'<br />
                 RUT: '.$dates["CardCode"].'<br />
                 DIAGNÓSTICO: '.$dates["Diagnosis"].'<br />
                 </b>
@@ -584,8 +583,7 @@ class PdfController extends Controller
         </tr>
         </table>
         <hr />
-        <b>
-        NOMBRE: '.$opt["Name"].'<br />
+        <b>NOMBRE: '.$opt["Name"].'<br />
         RUT: '.$opt["CardCode"].'<br />
         DIAGNÓSTICO: '.$opt["Diagnosis"].'<br />
         </b>
@@ -593,7 +591,8 @@ class PdfController extends Controller
         ';
 
         foreach ($opt["data"] as $recipe) {
-            $content .= "- <b>".$recipe->Name."</b><br>Dosis: ".$recipe->Dose.", ".$recipe->Period." veces por ".$recipe->Periodicity." dias<br><br>";
+            $content .= "- <b>".$recipe->Name."</b><br>".$recipe->Dose."<br><br>";
+            //$content .= "- <b>".$recipe->Name."</b><br>Dosis: ".$recipe->Dose.", ".$recipe->Period." veces por ".$recipe->Periodicity." dias<br><br>";
         }
         $content .= '<br /><br /></page>';   
     
@@ -876,8 +875,7 @@ class PdfController extends Controller
         </tr>
         </table>
         <hr />
-        <b>
-        NOMBRE: '.$interview->Name.'<br />
+        <b>NOMBRE: '.$interview->Name.'<br />
         RUT: '.$interview->CardCode.'<br />
         DIAGNÓSTICO: '.$interview->Diagnosis.'<br />
         </b>
