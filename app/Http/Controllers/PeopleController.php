@@ -175,14 +175,18 @@ class PeopleController extends Controller
             } else if ($request->Mode == "newdate") {
                 $date = new Date();
                 if (isset($f)) {
-                    //$date->CreatedGroupID = $f->DestinationGroupID;
-                    //$date->StatusID = $f->StatusID;
-                    $date->SurgeryID = $f->SurgeryID;
+                    // si es nueva consulta, y existe previa heredar TODO
+
+                    $date->Obs = $f->Obs;
                     $date->DiagnosisID = $f->DiagnosisID;
-                } else {
-                    //$date->CreatedGroupID = 1;
-                    //$date->StatusID = 1;
-                }
+                    $date->SurgeryID = $f->SurgeryID;
+                    $date->SurgeryObs = $f->SurgeryObs;
+                    $date->AntDrugs = $f->AntDrugs;
+                    $date->AntAllergy = $f->AntAllergy;
+                    $date->AntSurgical = $f->AntSurgical;
+                    $date->AntMedical = $f->AntMedical;
+                    
+                } 
                 $date->PeopleID = $row->PeopleID;
                 $date->Date = $request->dates["date"];
                 $date->Time = $request->dates["time"]; 
@@ -191,6 +195,29 @@ class PeopleController extends Controller
                 $date->UpdatedUserID = JWTAuth::user()->UserID;
                 $date->UpdatedAt = date("Y-m-d H:i:s");
                 $date->save();
+
+                // Antropometria
+                $ap = new Anthropometry();
+                $ap->DateID = $date->DateID;
+                $ap->Weight = 0;
+                $ap->Height = 0;
+                $ap->Sistolic = 0;
+                $ap->Diastolic = 0;
+                $ap->Temperature = 0;
+                $ap->PeopleID = $row->PeopleID;
+                $ap->CreatedUserID = JWTAuth::user()->UserID;
+                $ap->CreatedAt = date("Y-m-d H:i:s");
+                if (isset($f)) {
+                    $antes_ap = Anthropometry::where("DateID",$f->DateID)->first();
+                    if ($antes_ap) {
+                        $ap->Weight = $antes_ap->Weight;
+                        $ap->Height = $antes_ap->Height;
+                        $ap->Sistolic = $antes_ap->Sistolic;
+                        $ap->Diastolic = $antes_ap->Diastolic;
+                        $ap->Temperature = $antes_ap->Temperature;
+                    }
+                }
+                $ap->save();
             }
 
             return response()->json([
@@ -316,39 +343,10 @@ class PeopleController extends Controller
                     DB::raw("(SELECT COUNT(*) FROM Orders X WHERE X.DateID = Dates.DateID) as orders"),
                 )
                 ->where("PeopleID",$id)
-                ->join("Users","Users.UserID","=","Dates.UpdatedUserID")
+                ->leftJoin("Users","Users.UserID","=","Dates.UpdatedUserID")
                 ->orderBy("Date","Desc")->get();
         
-        $output = [];
-        foreach ($rows as $row) {
-            /*
-            $row["certificates"] = Certificate::where("DateID", $row->DateID)->get();
-            $row["recipes"] = Recipe::where("DateID", $row->DateID)->get();
-            $row["interviews"] = Interview::where("DateID", $row->DateID)->get();
-            $row["orders"] = Order::select("Orders.*","Exams.ExamTypeID")
-                             ->join("Exams","Exams.ExamID","=","Orders.ExamID")
-                             ->where("DateID", $row->DateID)->get();
-            $row["evolutions"] = Evolution::where("DateID", $row->DateID)->get();
-            
-            $ap = Anthropometry::where("DateID", $row->DateID)->first();
-            if (!$ap) {
-                $ap = new Anthropometry();
-                $ap->DateID = $row->DateID;
-                $ap->Weight = 0;
-                $ap->Height = 0;
-                $ap->Sistolic = 0;
-                $ap->Diastolic = 0;
-                $ap->Temperature = 0;
-                $ap->PeopleID = $row->PeopleID;
-                $ap->CreatedUserID = JWTAuth::user()->UserID;
-                $ap->CreatedAt = date("Y-m-d H:i:s");
-                $ap->save();
-            }
-            $row["anthropometry"] = $ap;
-            */
-            $output[] = $row;
-        }
-        return response()->json($output);
+        return response()->json($rows);
     }
     public function examsForPeople($id) {
 
