@@ -51,14 +51,12 @@ RUN sed -i 's/output_buffering = 4096/output_buffering = 65535/g' "$PHP_INI_DIR/
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf 
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 
-RUN echo 'pm = static' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
-    echo 'pm.max_children = 15' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'pm.max_requests = 500' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
-    echo 'catch_workers_output = yes' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'php_admin_flag[log_errors] = on' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'php_admin_flag[display_errors] = off' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'php_admin_value[error_reporting] = E_ALL & ~E_NOTICE & ~E_WARNING & ~E_STRICT & ~E_DEPRECATED' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'php_admin_value[error_log] = /var/log/error.log' >> /usr/local/etc/php-fpm.d/zz-docker.conf
+RUN echo 'pm = dynamic' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
+    echo 'pm.max_children = 75' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
+    echo 'pm.start_servers = 10' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
+    echo 'pm.min_spare_servers = 5' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
+    echo 'pm.max_spare_servers = 20' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
+    echo 'pm.process_idle_timeout = 10' >> /usr/local/etc/php-fpm.d/zz-docker.conf 
 
 EXPOSE 80
 
