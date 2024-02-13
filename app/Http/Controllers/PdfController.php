@@ -387,13 +387,13 @@ class PdfController extends Controller
             <td class="width-330" valign="top">
             <h5>Datos clínicos</h5>
             <table width="100%">
-            <tr><td class="width-120"><b>Peso (kg):</b></td><td>'.number_format($ant->Weight,1,",",".").'</td></tr>
-            <tr><td class="width-120"><b>Altura (cm):</b></td><td>'.number_format($ant->Height,0,",",".").'</td></tr>
-            <tr><td class="width-120"><b>IMC:</b></td><td>'.number_format($imc,1,",",".").'</td></tr>
-            <tr><td class="width-120"><b>Médicos:</b></td><td>'.($ant->AntMedical).'</td></tr>
-            <tr><td class="width-120"><b>Alergias:</b></td><td>'.($ant->AntAllergy).'</td></tr>
-            <tr><td class="width-120"><b>Quirúrgicos:</b></td><td>'.($ant->AntSurgical).'</td></tr>
-            <tr><td class="width-120"><b>Fármacos:</b></td><td>'.($ant->AntDrugs).'</td></tr>
+            <tr><td class="width-120"><b>Peso (kg):</b></td><td>'.($ant ? number_format($ant->Weight,1,",",".") : '').'</td></tr>
+            <tr><td class="width-120"><b>Altura (cm):</b></td><td>'.($ant ? number_format($ant->Height,0,",",".").'</td></tr>
+            <tr><td class="width-120"><b>IMC:</b></td><td>'.number_format($imc,1,",",".") : '').'</td></tr>
+            <tr><td class="width-120"><b>Médicos:</b></td><td>'.($ant ? $ant->AntMedical : '').'</td></tr>
+            <tr><td class="width-120"><b>Alergias:</b></td><td>'.($ant ? $ant->AntAllergy : '').'</td></tr>
+            <tr><td class="width-120"><b>Quirúrgicos:</b></td><td>'.($ant ? $ant->AntSurgical : '').'</td></tr>
+            <tr><td class="width-120"><b>Fármacos:</b></td><td>'.($ant ? $ant->AntDrugs : '').'</td></tr>
             </table>
             </td>
           </tr>
