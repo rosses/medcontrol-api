@@ -9,6 +9,7 @@ class DiagnosisController extends Controller
     public function index() {
         $rows = Diagnosis::select('Diagnosis.*')
                 ->where('Diagnosis.Active',1)
+                ->orderBy('Diagnosis.Orden','DESC')
                 ->orderBy('Diagnosis.Name','ASC')
                 ->get();
         return response()->json($rows);
