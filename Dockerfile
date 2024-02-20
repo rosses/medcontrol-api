@@ -41,6 +41,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+RUN docker-php-ext-install gd
+
 ENV ACCEPT_EULA=Y
 RUN apt-get update && apt-get install -y gnupg2
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - 
