@@ -25,6 +25,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
       supervisor \
       cron \
       ca-certificates \ 
+      nano \ 
       sudo \
       libzip-dev \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
@@ -32,8 +33,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     && docker-php-ext-install \
       pdo_mysql \
       sockets \
-      intl \ 
-      nano \ 
+      intl \  
       opcache \
       zip \
       wget \ 
