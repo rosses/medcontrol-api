@@ -1,11 +1,45 @@
-FROM php:7.4-fpm-alpine AS base
+FROM php:7.4-apache
 
-RUN apk add --no-cache ca-certificates autoconf git nginx curl \
-    libpng-dev libxml2-dev libzip-dev libjpeg-turbo-dev zip unzip supervisor freetype-dev && \ 
-    docker-php-ext-install zip soap pdo_mysql bcmath 
-#mbstring already in fpm-alpine , remove for ext-install
-RUN docker-php-ext-install gd
+ARG BUILD_ARGUMENT_ENV=dev
+ENV ENV=$BUILD_ARGUMENT_ENV
+ENV APP_HOME /var/www/html
+ARG HOST_UID=1000
+ARG HOST_GID=1000
+ENV USERNAME=www-data
+ARG INSIDE_DOCKER_CONTAINER=1
+ENV INSIDE_DOCKER_CONTAINER=$INSIDE_DOCKER_CONTAINER
+ARG XDEBUG_CONFIG=main
+ENV XDEBUG_CONFIG=$XDEBUG_CONFIG
 
+# install all the dependencies and enable PHP modules
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
+      procps \
+      nano \
+      git \
+      unzip \
+      libicu-dev \
+      zlib1g-dev \
+      libxml2 \
+      libxml2-dev \
+      libreadline-dev \
+      supervisor \
+      cron \
+      sudo \
+      libzip-dev \
+    && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install \
+      pdo_mysql \
+      sockets \
+      intl \
+      opcache \
+      zip \
+    && rm -rf /tmp/* \
+    && rm -rf /var/list/apt/* \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+#MSSQL
 RUN wget https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.5.1.1-1_amd64.apk && \
     wget https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/mssql-tools_17.5.1.1-1_amd64.apk && \
     apk add --allow-untrusted msodbcsql17_17.5.1.1-1_amd64.apk && \
@@ -17,64 +51,57 @@ RUN wget https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8
     rm msodbcsql17_17.5.1.1-1_amd64.apk && \
     rm mssql-tools_17.5.1.1-1_amd64.apk
 
-WORKDIR /var/www/html
+# disable default site and delete all default files inside APP_HOME
+RUN a2dissite 000-default.conf
+RUN rm -r $APP_HOME
 
-COPY . /var/www/html
+# create document root, fix permissions for www-data user and change owner to www-data
+RUN mkdir -p $APP_HOME/public && \
+    mkdir -p /home/$USERNAME && chown $USERNAME:$USERNAME /home/$USERNAME \
+    && usermod -o -u $HOST_UID $USERNAME -d /home/$USERNAME \
+    && groupmod -o -g $HOST_GID $USERNAME \
+    && chown -R ${USERNAME}:${USERNAME} $APP_HOME
 
+# put apache and php config for Laravel, enable sites
+COPY ./docker/general/laravel.conf /etc/apache2/sites-available/laravel.conf
+RUN a2ensite laravel.conf 
+COPY ./docker/$BUILD_ARGUMENT_ENV/php.ini /usr/local/etc/php/php.ini
 
-# Use the default production configuration
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+# enable apache modules
+RUN a2enmod rewrite
 
-# Update some configurations
-RUN sed -ri -e 's!;date.timezone =!date.timezone = "America/Santiago"!g' "$PHP_INI_DIR/php.ini"
+# install Xdebug in case dev/test environment
+COPY ./docker/general/do_we_need_xdebug.sh /tmp/
+COPY ./docker/dev/xdebug-${XDEBUG_CONFIG}.ini /tmp/xdebug.ini
+RUN chmod u+x /tmp/do_we_need_xdebug.sh && /tmp/do_we_need_xdebug.sh
 
-RUN sed -i 's/;max_input_vars = 1000/max_input_vars = 100000000/g' "$PHP_INI_DIR/php.ini"
-RUN sed -i 's/max_input_vars = 1000/max_input_vars = 100000000/g' "$PHP_INI_DIR/php.ini"
+# install composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN chmod +x /usr/bin/composer
+ENV COMPOSER_ALLOW_SUPERUSER 1
 
-RUN sed -i 's/;memory_limit = 128M/memory_limit = 512M/g' "$PHP_INI_DIR/php.ini"
-RUN sed -i 's/memory_limit = 128M/memory_limit = 512M/g' "$PHP_INI_DIR/php.ini"
+# add supervisor
+RUN mkdir -p /var/log/supervisor
+COPY --chown=root:root ./docker/general/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY --chown=root:crontab ./docker/general/cron /var/spool/cron/crontabs/root
+RUN chmod 0600 /var/spool/cron/crontabs/root
 
-RUN sed -i 's/;upload_max_filesize = 2M/upload_max_filesize = 512M/g' "$PHP_INI_DIR/php.ini"
-RUN sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 512M/g' "$PHP_INI_DIR/php.ini"
+# generate certificates
+# TODO: change it and make additional logic for production environment
+#RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/ssl-cert-snakeoil.key -out /etc/ssl/certs/ssl-cert-snakeoil.pem -subj "/C=AT/ST=Vienna/L=Vienna/O=Security/OU=Development/CN=example.com"
 
-RUN sed -i 's/;max_execution_time = 30/max_execution_time = 600/g' "$PHP_INI_DIR/php.ini"
-RUN sed -i 's/max_execution_time = 30/max_execution_time = 600/g' "$PHP_INI_DIR/php.ini"
+# set working directory
+WORKDIR $APP_HOME
 
-RUN sed -i 's/;max_input_time = 60/max_input_time = 600/g' "$PHP_INI_DIR/php.ini"
-RUN sed -i 's/max_input_time = 60/max_input_time = 600/g' "$PHP_INI_DIR/php.ini"
+USER ${USERNAME}
 
-RUN sed -i 's/;post_max_size = 8M/post_max_size = 256M/g' "$PHP_INI_DIR/php.ini" 
-RUN sed -i 's/post_max_size = 8M/post_max_size = 256M/g' "$PHP_INI_DIR/php.ini"  
+# copy source files and config file
+COPY --chown=${USERNAME}:${USERNAME} . $APP_HOME/
+#COPY --chown=${USERNAME}:${USERNAME} .env.$ENV $APP_HOME/.env
 
-RUN sed -i 's/output_buffering = 4096/output_buffering = 65535/g' "$PHP_INI_DIR/php.ini"  
+# install all PHP dependencies
+RUN if [ "$BUILD_ARGUMENT_ENV" = "dev" ] || [ "$BUILD_ARGUMENT_ENV" = "test" ]; then COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader --no-interaction --no-progress; \
+    else COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader --no-interaction --no-progress --no-dev; \
+    fi
 
-COPY docker/nginx.conf /etc/nginx/http.d/default.conf 
-COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
-
-RUN echo 'pm = dynamic' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
-    echo 'pm.max_children = 75' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo 'pm.start_servers = 10' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
-    echo 'pm.min_spare_servers = 5' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
-    echo 'pm.max_spare_servers = 20' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \ 
-    echo 'pm.process_idle_timeout = 10' >> /usr/local/etc/php-fpm.d/zz-docker.conf 
-
-EXPOSE 80
-
-CMD ["/usr/bin/supervisord","-n","-c","/etc/supervisor/supervisord.conf"]
-#CMD ["nginx","-g", "daemon off;"
-
-FROM base AS builder
-
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-RUN composer install --no-interaction --prefer-dist
-# --no-dev     # removed from composer install 
-
-RUN rm -rf /usr/local/bin/composer && rm -rf /root/.composer
-
-FROM base AS production
-
-COPY --from=builder /var/www/html /var/www/html
-
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html/storage 
-#&& chmod -R 755 /var/www/html/bootstrap/cache -- only in laravel
+USER root
