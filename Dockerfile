@@ -22,8 +22,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
       libpng-dev \ 
       libpng-dev \ 
       libxml2 \
-      libjpeg-turbo-dev \ 
-      freetype-dev \
+      libturbojpeg \  
       libreadline-dev \
       supervisor \
       cron \
