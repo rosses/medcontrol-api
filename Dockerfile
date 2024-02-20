@@ -34,25 +34,24 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     && docker-php-ext-install \
       pdo_mysql \
       sockets \
-      intl \  
-      opcache \
+      intl \   
       zip \
     && rm -rf /tmp/* \
     && rm -rf /var/list/apt/* \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-#MSSQL
-RUN wget https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.5.1.1-1_amd64.apk && \
-    wget https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/mssql-tools_17.5.1.1-1_amd64.apk && \
-    apk add --allow-untrusted msodbcsql17_17.5.1.1-1_amd64.apk && \
-    apk add --allow-untrusted mssql-tools_17.5.1.1-1_amd64.apk && \
-    apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS unixodbc-dev && \
-    pecl install pdo_sqlsrv-5.8.0 && \
-    docker-php-ext-enable pdo_sqlsrv && \
-    apk del .phpize-deps && \
-    rm msodbcsql17_17.5.1.1-1_amd64.apk && \
-    rm mssql-tools_17.5.1.1-1_amd64.apk
+
+ENV ACCEPT_EULA=Y
+RUN apt-get install -y gnupg2
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - 
+RUN curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list 
+RUN apt-get update 
+RUN ACCEPT_EULA=Y apt-get -y --no-install-recommends install msodbcsql17 unixodbc-dev 
+RUN pecl install sqlsrv
+RUN pecl install pdo_sqlsrv
+RUN docker-php-ext-enable sqlsrv pdo_sqlsrv
+
 
 # disable default site and delete all default files inside APP_HOME
 RUN a2dissite 000-default.conf
