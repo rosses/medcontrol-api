@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:7.4.0-apache
 
 ARG BUILD_ARGUMENT_ENV=dev
 ENV ENV=$BUILD_ARGUMENT_ENV
