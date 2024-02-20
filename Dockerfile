@@ -47,10 +47,8 @@ RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list 
 RUN apt-get update 
 RUN ACCEPT_EULA=Y apt-get -y --no-install-recommends install msodbcsql17 unixodbc-dev 
-RUN pecl install sqlsrv
-RUN pecl install pdo_sqlsrv
-RUN docker-php-ext-install pdo pdo_mysql
-RUN docker-php-ext-enable sqlsrv pdo_sqlsrv pdo pdo_mysql
+RUN pecl install pdo_sqlsrv-5.8.0
+RUN docker-php-ext-enable pdo_sqlsrv pdo pdo_mysql
 
 
 # disable default site and delete all default files inside APP_HOME
