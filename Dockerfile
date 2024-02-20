@@ -24,16 +24,20 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
       libreadline-dev \
       supervisor \
       cron \
+      ca-certificates \ 
       sudo \
+      soap \ 
       libzip-dev \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-configure intl \
     && docker-php-ext-install \
       pdo_mysql \
       sockets \
-      intl \
+      intl \ 
+      nano \ 
       opcache \
       zip \
+      wget \ 
     && rm -rf /tmp/* \
     && rm -rf /var/list/apt/* \
     && rm -rf /var/lib/apt/lists/* \
