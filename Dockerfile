@@ -26,7 +26,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
       cron \
       ca-certificates \ 
       sudo \
-      soap \ 
       libzip-dev \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-configure intl \
