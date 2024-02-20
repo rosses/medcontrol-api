@@ -20,9 +20,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
       libicu-dev \
       zlib1g-dev \ 
       libpng-dev \ 
-      libpng-dev \ 
       libxml2 \
-      libturbojpeg \  
       libreadline-dev \
       supervisor \
       cron \
