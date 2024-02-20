@@ -87,4 +87,10 @@ class AuthController extends Controller
             'expires_in' => auth()->factory()->getTTL() * 60 * 24
         ]);
     }
+
+    function master(Request $request) {
+        $master = [];
+
+        return response()->json($master, 200);
+    }
 }

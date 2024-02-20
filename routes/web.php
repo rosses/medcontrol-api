@@ -254,6 +254,8 @@ Route::group([
         Route::get('certs-interview/{id}', 'PdfController@getInterview');
         Route::get('people/{id}', 'PdfController@getPeople');
     });
+
+    Route::get('master','AuthController@master');
 });
 
 

@@ -10,10 +10,11 @@ use Illuminate\Http\Request;
 class ExamDataController extends Controller
 {
     public function index() {
-        $rows = ExamData::select('ExamDatas.*','Exams.Name as ExamName','Exams.ExamTypeID')
+        $rows = ExamData::select('ExamDatas.*','Exams.Name as ExamName','Exams.ExamTypeID','ExamTypes.Name as ExamTypeName')
                 ->join('Exams', 'ExamDatas.ExamID', '=', 'Exams.ExamID')
                 ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
                 ->where('ExamDatas.Active',1)
+                ->orderBy('ExamTypes.Name','ASC')
                 ->orderBy('Exams.Name','ASC')
                 ->orderBy('ExamDatas.Name','ASC')
                 ->get();
