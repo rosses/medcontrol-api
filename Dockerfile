@@ -41,7 +41,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-
 ENV ACCEPT_EULA=Y
 RUN apt-get update && apt-get install -y gnupg2
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - 
@@ -50,7 +49,8 @@ RUN apt-get update
 RUN ACCEPT_EULA=Y apt-get -y --no-install-recommends install msodbcsql17 unixodbc-dev 
 RUN pecl install sqlsrv
 RUN pecl install pdo_sqlsrv
-RUN docker-php-ext-enable sqlsrv pdo_sqlsrv
+RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-enable sqlsrv pdo_sqlsrv pdo pdo_mysql
 
 
 # disable default site and delete all default files inside APP_HOME
