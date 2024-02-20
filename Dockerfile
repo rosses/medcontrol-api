@@ -18,9 +18,12 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
       git \
       unzip \
       libicu-dev \
-      zlib1g-dev \
+      zlib1g-dev \ 
+      libpng-dev \ 
+      libpng-dev \ 
       libxml2 \
-      libxml2-dev \
+      libjpeg-turbo-dev \ 
+      freetype-dev \
       libreadline-dev \
       supervisor \
       cron \
@@ -35,6 +38,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
       pdo_mysql \
       sockets \
       intl \   
+      bcmath \ 
       zip \
     && rm -rf /tmp/* \
     && rm -rf /var/list/apt/* \
