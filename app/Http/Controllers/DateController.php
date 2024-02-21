@@ -158,6 +158,7 @@ class DateController extends Controller
             $date->AntMedical = $request->AntMedical;
             $date->AntAllergy = $request->AntAllergy;
             $date->AntSurgical = $request->AntSurgical;
+            $date->AntHabits = $request->AntHabits;
             $date->DiagnosisID = $request->DiagnosisID;
             $date->SurgeryID = $request->SurgeryID;
             $date->Obs = $request->Obs;

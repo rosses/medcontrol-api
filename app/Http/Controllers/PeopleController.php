@@ -185,6 +185,7 @@ class PeopleController extends Controller
                     $date->SurgeryObs = $f->SurgeryObs;
                     $date->AntDrugs = $f->AntDrugs;
                     $date->AntAllergy = $f->AntAllergy;
+                    $date->AntHabits = $f->AntHabits;
                     $date->AntSurgical = $f->AntSurgical;
                     $date->AntMedical = $f->AntMedical;
                     
@@ -640,6 +641,7 @@ class PeopleController extends Controller
             $txt .= "Farmacos: ".(isset($surgery) ? $surgery->AntDrugs : '')."\n";
             $txt .= "Quirúrgicos: ".(isset($surgery) ? $surgery->AntSurgical : '')."\n";
             $txt .= "Alergias: ".(isset($surgery) ? $surgery->AntAllergy : '')."\n"; 
+            $txt .= "Hábitos: ".(isset($surgery) ? $surgery->AntHabits : '')."\n"; 
 
             foreach ($results as $type=>$d) {
                 $txt .= "\n".mb_strtoupper($type,'utf-8')."\n";

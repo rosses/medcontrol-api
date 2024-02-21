@@ -245,9 +245,10 @@ class PdfController extends Controller {
             <tr><td class="width-120"><b>Altura (cm):</b></td><td>'.($ant ? number_format($ant->Height,0,",",".").'</td></tr>
             <tr><td class="width-120"><b>IMC:</b></td><td>'.number_format($imc,1,",",".") : '').'</td></tr>
             <tr><td class="width-120"><b>Médicos:</b></td><td>'.($ant ? $ant->AntMedical : '').'</td></tr>
-            <tr><td class="width-120"><b>Alergias:</b></td><td>'.($ant ? $ant->AntAllergy : '').'</td></tr>
-            <tr><td class="width-120"><b>Quirúrgicos:</b></td><td>'.($ant ? $ant->AntSurgical : '').'</td></tr>
             <tr><td class="width-120"><b>Fármacos:</b></td><td>'.($ant ? $ant->AntDrugs : '').'</td></tr>
+            <tr><td class="width-120"><b>Quirúrgicos:</b></td><td>'.($ant ? $ant->AntSurgical : '').'</td></tr>
+            <tr><td class="width-120"><b>Alergias:</b></td><td>'.($ant ? $ant->AntAllergy : '').'</td></tr>
+            <tr><td class="width-120"><b>Hábitos:</b></td><td>'.($ant ? $ant->AntHabits : '').'</td></tr>
             </table>
             </td>
           </tr>
@@ -418,6 +419,7 @@ class PdfController extends Controller {
             'Dates.Date as Date',
             'Dates.Time as Time',
             'Dates.AntAllergy',
+            'Dates.AntHabits',
             'Dates.AntDrugs',
             'Dates.AntSurgical',
             'Dates.AntMedical',
@@ -542,6 +544,7 @@ class PdfController extends Controller {
         $fp = str_replace("{{fecha_cirugia}}",$dc,$fp);
         $fp = str_replace("{{rut}}",$rut,$fp); 
         $fp = str_replace("{{allergy}}",$cert->AntAllergy,$fp); 
+        $fp = str_replace("{{habits}}",$cert->AntHabits,$fp); 
         $fp = str_replace("{{drugs}}",$cert->AntDrugs,$fp); 
         $fp = str_replace("{{medical}}",$cert->AntMedical,$fp); 
         $fp = str_replace("{{surgical}}",$cert->AntSurgical,$fp); 
