@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Date; 
 use App\Models\Anthropometry;
 use App\Models\Certificate;
+use App\Models\Diagnosis;
 use App\Models\Evolution;
 use App\Models\ExamType;
 use App\Models\Interview;
+use App\Models\Medicine;
 use App\Models\People;
 use App\Models\Order;
 use App\Models\Recipe;
@@ -159,7 +161,18 @@ class DateController extends Controller
             $date->AntAllergy = $request->AntAllergy;
             $date->AntSurgical = $request->AntSurgical;
             $date->AntHabits = $request->AntHabits;
-            $date->DiagnosisID = $request->DiagnosisID;
+
+            if ($request->DiagnosisID == "99999999") {
+                $dd = new Diagnosis();
+                $dd->Name = (isset($request->DiagnosisNew) ? $request->DiagnosisNew : '');
+                $dd->Active=1;
+                $dd->Orden=0;
+                $dd->save();
+                $DiagnosisID = $dd->DiagnosisID;
+            } else {
+                $DiagnosisID = $request->DiagnosisID;
+            }
+            $date->DiagnosisID = $DiagnosisID;
             $date->SurgeryID = $request->SurgeryID;
             $date->Obs = $request->Obs;
             $date->UpdatedUserID = JWTAuth::user()->UserID;
@@ -196,7 +209,19 @@ class DateController extends Controller
                         $recipe->CreatedUserID = JWTAuth::user()->UserID;
                         $recipe->CreatedAt = date("Y-m-d H:i:s");
                     }
-                    $recipe->MedicineID = $r["MedicineID"];
+
+                    if ($r["MedicineID"] == "99999999") {
+                        $dd = new Medicine();
+                        $dd->Name = (isset($request->MedicineNew) ? $request->MedicineNew : '');
+                        $dd->LabID=1;
+                        $dd->Active=1;
+                        $dd->save();
+                        $MedicineID = $dd->MedicineID;
+                    } else {
+                        $MedicineID = $r["MedicineID"];
+                    }
+
+                    $recipe->MedicineID = $MedicineID;
                     $recipe->Dose = $r["Dose"];
                     $recipe->Period = $r["Period"];
                     $recipe->Periodicity = $r["Periodicity"];
