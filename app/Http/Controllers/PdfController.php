@@ -104,32 +104,62 @@ class PdfController extends Controller {
             }
             $output[] = $opt;            
         } 
-        $content="<h4>Rp</h4>";
+        
+        $content="";
         foreach ($output as $dates) {
-            foreach ($dates["data"] as $datas) {
-                $content.= '<b>'.$datas["ExamTypeName"].'</b><br />';
+            foreach ($dates["data"] as $idx=>$datas) {
+
+                $ccc = $dates["CardCode"];
+                $ccc = str_replace(["-","."],["",""], $ccc);
+                $rut = number_format( substr ( $ccc, 0 , -1 ) , 0, "", ".") . '-' . substr ( $ccc, strlen($ccc) -1 , 1 );
+                $fecha_nac = new \DateTime(date('Y/m/d',strtotime($dates["Birthday"]))); 
+                $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
+                $edad = date_diff($fecha_hoy,$fecha_nac); 
+                
+                $content.="
+                <b>NOMBRE:</b> ".ucwords(mb_strtolower($dates["Name"],"utf-8"))."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>EDAD:</b> ".$edad->format("%Y")." años"."<br />
+                <b>RUT:</b> ".$rut."<br /> 
+                <b>DIAGNÓSTICO:</b> ".$dates["Diagnosis"]."<br />  
+                ";
+                $content.= '<h4 style="font-style:italic;">Rp</h4><b>'.$datas["ExamTypeName"].'</b><br />';
                 foreach ($datas["Exams"] as $exm) {
                     $content .= "- ".$exm."<br>";
+                } 
+
+                if (isset($dates["data"][$idx+1])) {
+                    $content.='</page>
+                    <page format="140x200" backtop="23mm" backbottom="25mm" backleft="0mm" backright="0mm">
+                    <page_header>
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td class="width-300">
+                                    <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
+                                    <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
+                                    Cirugía Digestiva y Obesidad</h4>
+                                </td>
+                        
+                                <td class="width-160" style="text-align:right;">
+                                    <img src="logosalinas.png" width="180" />
+                                </td>
+                            </tr>
+                        </table>
+                        <hr />
+                    </page_header>
+                    <page_footer>
+                        <div style="text-align:right;">
+                            <img src="firmasalinas.png" width="180" />
+                        </div>
+                        <div style="text-align:left; font-size:11px;">
+                            Fecha, {{fecha}}<br />
+                            Centro de Cirugía Digestiva y Obesidad Clínica Puerto Varas<br />
+                            www.drsalinas.cl
+                        </div>
+                    </page_footer>
+                    ';   
                 }
-                $content .= '<br /><br />';   
             }
         }
-
-        $ccc = $dates["CardCode"];
-        $ccc = str_replace(["-","."],["",""], $ccc);
-        $rut = number_format( substr ( $ccc, 0 , -1 ) , 0, "", ".") . '-' . substr ( $ccc, strlen($ccc) -1 , 1 );
-        if ($dates["Birthday"]=="") {
-            $dates["Birthday"] = date("Y-m-d H:i:s");
-        }
-        $fecha_nac = new \DateTime(date('Y/m/d',strtotime($dates["Birthday"]))); 
-        $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
-        $edad = date_diff($fecha_hoy,$fecha_nac); 
-
-        $content="
-        <b>NOMBRE:</b> ".ucwords(mb_strtolower($dates["Name"],"utf-8"))."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>EDAD:</b> ".$edad->format("%Y")." años"."<br />
-        <b>RUT:</b> ".$rut."<br /> 
-        <b>DIAGNÓSTICO:</b> ".$dates["Diagnosis"]."<br />   
-        ".$content;
+ 
 
         $path = dirname(__FILE__)."/../../../resources/views/generic.html";
         if (!file_exists($path)) {
@@ -383,7 +413,7 @@ class PdfController extends Controller {
         <b>DIAGNÓSTICO:</b> ".$opt["Diagnosis"]."<br />   
         ";
 
-        $content.= '<h4>Rp</h4>';
+        $content.= '<h4 style="font-style:italic;">Rp</h4>';
         foreach ($opt["data"] as $recipe) {
             $content .= "- <b>".$recipe->Name."</b><br>".$recipe->Dose."<br><br>";
         }
