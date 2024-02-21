@@ -111,7 +111,7 @@ class PdfController extends Controller {
                 foreach ($datas["Exams"] as $exm) {
                     $content .= "- ".$exm."<br>";
                 }
-                $content .= '<br /><br /></page>';   
+                $content .= '<br /><br />';   
             }
         }
 
@@ -605,7 +605,7 @@ class PdfController extends Controller {
         <b>DIAGNÓSTICO:</b> ".$interview->Diagnosis."<br />   
         ";
 
-        $content .= '<h4>Interconsulta</h4><b>Especialidad: </b> '.$interview->SpecialistName.' '.$interview->Description.'<br />'.$interview->WantText.'<br /></page>';   
+        $content .= '<h4>Interconsulta</h4><b>Especialidad: </b> '.$interview->SpecialistName.' '.$interview->Description.'<br />'.$interview->WantText.'<br />';   
         $path = dirname(__FILE__)."/../../../resources/views/generic.html";
         if (!file_exists($path)) {
             throw new \Exception("not found template ".$path);
