@@ -104,10 +104,10 @@ class PdfController extends Controller {
             }
             $output[] = $opt;            
         } 
-        $content="";
+        $content="<h4>Rp</h4>";
         foreach ($output as $dates) {
             foreach ($dates["data"] as $datas) {
-                $content.= '<h4>Rp</h4><b>'.$datas["ExamTypeName"].'</b><br><br>';
+                $content.= '<b>'.$datas["ExamTypeName"].'</b><br />';
                 foreach ($datas["Exams"] as $exm) {
                     $content .= "- ".$exm."<br>";
                 }
