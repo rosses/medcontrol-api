@@ -41,7 +41,8 @@ class PdfController extends Controller {
             'Peoples.Name',
             'Peoples.Lastname',
             'Diagnosis.Name',
-            'Peoples.CardCode'
+            'Peoples.CardCode',
+            'Peoples.Birthday'
         )
         ->orderBy("Orders.DateID","DESC")
         ->get();
@@ -513,6 +514,7 @@ class PdfController extends Controller {
                 ->leftJoin("Specialists","Specialists.SpecialistID","=","Interviews.SpecialistID")
                 ->where("DateID",$cert->DateID)
                 ->get();
+
         foreach ($inv as $idoc) {
             $txt_medicos .= '<tr><td class="width-200">'.$idoc->SpecialistName.'</td><td class="width-200">'.$idoc->Description.'</td></tr>';
         }
