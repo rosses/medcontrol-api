@@ -18,8 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Spipu\Html2Pdf\Html2Pdf;
 
-class PdfController extends Controller
-{
+class PdfController extends Controller {
     public function getDataOrders($id) {
         $pdfname = "";
         $packs = Order::select(
@@ -29,7 +28,8 @@ class PdfController extends Controller
             'Peoples.Name as PeopleName',
             'Peoples.Lastname as PeopleLastname',
             'Diagnosis.Name as DiagnosisName',
-            'Peoples.CardCode as PeopleCardCode'
+            'Peoples.CardCode as PeopleCardCode',
+            'Peoples.Birthday as PeopleBirthday'
         )
         ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
         ->leftJoin('Peoples', 'Peoples.PeopleID', '=', 'Dates.PeopleID')
@@ -91,7 +91,8 @@ class PdfController extends Controller
                 "data" => $rows,
                 "Name" => "",
                 "Diagnosis" => "",
-                "CardCode" => $pack->PeopleCardCode
+                "CardCode" => $pack->PeopleCardCode,
+                "Birthday" => $pack->PeopleBirthday
             ];
             if ($pack->PeopleName != "" && $pack->PeopleLastname != "") {
                 $opt["Name"] = $pack->PeopleName." ".$pack->PeopleLastname;
@@ -100,99 +101,12 @@ class PdfController extends Controller
             if ($pack->DiagnosisName != "") {
                 $opt["Diagnosis"] = $pack->DiagnosisName;
             }
-            $output[] = $opt;
-            
+            $output[] = $opt;            
         } 
-
-
-        $page_header = '<page_header></page_header>'; 
-        $page_footer = '<page_footer>
-            <div style="text-align:right;">
-            <img src="firmasalinas.png" width="180" />
-            </div>
-            <div style="text-align:left; font-size:11px;">
-                Fecha, '.date("d/m/Y").'<br />
-                Centro de Cirugía Digestiva y Obesidad Clínica Puerto Varas<br />
-                www.drsalinas.cl
-            </div>
-        </page_footer>';
-        //$page_footer = '<page_footer>[[page_cu]]/[[page_nb]]</page_footer>'; 
-        $content = '
-        <style type="text/css">
-            <!-- 
-            .single-table { padding: 3px; }
-            .width-740 { width: 740px; }
-            .width-560 { width: 560px; }
-            .width-550 { width: 550px; }
-            .width-380 { width: 380px; }
-            .width-330 { width: 330px; }
-            .width-440 { width: 440px; }
-            .width-280 { width: 280px; }
-            .width-250 { width: 250px; }
-            .width-200 { width: 200px; }
-            .width-150 { width: 150px; }
-            .width-170 { width: 170px; }
-            .width-160 { width: 160px; }
-            .width-110 { width: 110px; }
-            .width-120 { width: 120px; }
-            .width-100 { width: 100px; }
-            .width-90 { width: 90px; }
-            .width-80 { width: 80px; }
-            .width-75 { width: 75px; }
-            .width-75 { width: 70px; }
-            .width-65 { width: 65px; }
-            .width-60 { width: 60px; }
-            .width-55 { width: 55px; }
-            .width-50 { width: 50px; }
-            .width-45 { width: 45px; }
-            .width-40 { width: 40px; }
-            .width-35 { width: 35px; }
-            .width-30 { width: 30px; }
-            .text-center { text-center:left; }
-            .text-left { text-align:left; }
-            .b { font-weight: bold; }
-            .cola {
-                border-collapse: collapse;
-            }
-            .cola td {
-                border:1px solid black;
-                font-size: 10px;
-                padding:3px;
-                height: 5px;
-                border-collapse: collapse;
-            }
-            h4 { font-style: italic; }
-            --> 
-        </style>';
-        
+        $content="";
         foreach ($output as $dates) {
             foreach ($dates["data"] as $datas) {
-                $content.= '
-                <page format="140x200" backtop="8mm" backbottom="20mm" backleft="0mm" backright="0mm">
-                '.$page_header.'
-                '.$page_footer.'
-                <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td class="width-330">
-                        <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
-                        <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                        Cirugía Digestiva y Obesidad</h4><br /><br />
-                    </td>
-    
-                    <td class="width-160" style="text-align:right;">
-                        <img src="logosalinas.png" width="120" />
-                    </td>
-                </tr>
-                </table>
-                <hr />
-                <b>NOMBRE: '.$dates["Name"].'<br />
-                RUT: '.$dates["CardCode"].'<br />
-                DIAGNÓSTICO: '.$dates["Diagnosis"].'<br />
-                </b>
-                <h4>Rp</h4>
-                <b>'.$datas["ExamTypeName"].'</b><br><br>
-                ';
-
+                $content.= '<h4>Rp</h4><b>'.$datas["ExamTypeName"].'</b><br><br>';
                 foreach ($datas["Exams"] as $exm) {
                     $content .= "- ".$exm."<br>";
                 }
@@ -200,20 +114,41 @@ class PdfController extends Controller
             }
         }
 
+        $ccc = $dates["CardCode"];
+        $ccc = str_replace(["-","."],["",""], $ccc);
+        $rut = number_format( substr ( $ccc, 0 , -1 ) , 0, "", ".") . '-' . substr ( $ccc, strlen($ccc) -1 , 1 );
+        if ($dates["Birthday"]=="") {
+            $dates["Birthday"] = date("Y-m-d H:i:s");
+        }
+        $fecha_nac = new \DateTime(date('Y/m/d',strtotime($dates["Birthday"]))); 
+        $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
+        $edad = date_diff($fecha_hoy,$fecha_nac); 
+
+        $content="
+        <b>NOMBRE:</b> ".ucwords(mb_strtolower($dates["Name"],"utf-8"))."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>EDAD:</b> ".$edad->format("%Y")." años"."<br />
+        <b>RUT:</b> ".$rut."<br /> 
+        <b>DIAGNÓSTICO:</b> ".$dates["Diagnosis"]."<br />   
+        ".$content;
+
+        $path = dirname(__FILE__)."/../../../resources/views/generic.html";
+        if (!file_exists($path)) {
+            throw new \Exception("not found template ".$path);
+        }   
+        $fp = file_get_contents($path);
+        $fp = str_replace("{{html}}",$content,$fp);
+        $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
+
         //210x279 
-        $md5 = md5(time());
         $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', 5);
         $html2pdf->pdf->SetDisplayMode('fullpage');
         $html2pdf->setDefaultFont('Arial');
         $html2pdf->pdf->setTitle("pdf ".$pdfname.".pdf");
-        $html2pdf->writeHTML($content); 
+        $html2pdf->writeHTML($fp); 
         $html2pdf->output("pdf ".$pdfname.".pdf");
         die();
 
     } 
-
     public function getPeople($id) {
-        
         $people = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
                 ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
@@ -221,73 +156,12 @@ class PdfController extends Controller
                 ->where("PeopleID", $id);    
         
         $people = $people->first();
-
         $pdfname = $people->Name." ".$people->Lastname;
-
         $ant = Anthropometry::where("PeopleID", $id)->orderBy("AnthropometryID","DESC")->first();
-
         $evolutions =  Evolution::select("Evolutions.*", "Users.Name as CreatedByName")
                             ->join("Users","Users.UserID","=","Evolutions.CreatedUserID")
                             ->where("Evolutions.PeopleID", $id)
                             ->get();
-
-        $page_header = '<page_header></page_header>'; 
-        $page_footer = '<page_footer>
-            <div style="text-align:right;">
-            <img src="firmasalinas.png" width="180" />
-            </div>
-            <div style="text-align:left; font-size:11px;">
-                Fecha, '.date("d/m/Y").'<br />
-                Centro de Cirugía Digestiva y Obesidad Clínica Puerto Varas<br />
-                www.drsalinas.cl
-            </div>
-        </page_footer>';
-        $content = '
-        <style type="text/css">
-            <!-- 
-            .single-table { padding: 3px; }
-            .width-740 { width: 740px; }
-            .width-560 { width: 560px; }
-            .width-550 { width: 550px; }
-            .width-380 { width: 380px; }
-            .width-330 { width: 330px; }
-            .width-440 { width: 440px; }
-            .width-280 { width: 280px; }
-            .width-250 { width: 250px; }
-            .width-200 { width: 200px; }
-            .width-150 { width: 150px; }
-            .width-170 { width: 170px; }
-            .width-160 { width: 160px; }
-            .width-110 { width: 110px; }
-            .width-120 { width: 120px; }
-            .width-100 { width: 100px; }
-            .width-90 { width: 90px; }
-            .width-80 { width: 80px; }
-            .width-75 { width: 75px; }
-            .width-75 { width: 70px; }
-            .width-65 { width: 65px; }
-            .width-60 { width: 60px; }
-            .width-55 { width: 55px; }
-            .width-50 { width: 50px; }
-            .width-45 { width: 45px; }
-            .width-40 { width: 40px; }
-            .width-35 { width: 35px; }
-            .width-30 { width: 30px; }
-            .text-center { text-center:left; }
-            .text-left { text-align:left; }
-            .b { font-weight: bold; }
-            .cola {
-                border-collapse: collapse;
-            }
-            .cola td {
-                border:1px solid black;
-                font-size: 10px;
-                padding:3px;
-                height: 5px;
-                border-collapse: collapse;
-            }
-            --> 
-        </style>';
 
         if ($people->Birthday=="") {
             $people->Birthday = date("Y-m-d H:i:s");
@@ -343,34 +217,13 @@ class PdfController extends Controller
             <tr><td class="width-120"><b>Temp. (C&deg;):</b></td><td>'.number_format($ant->Temperature,1,",",".").'</td></tr>
             <tr><td class="width-120"><b>Presión:</b></td><td>'.number_format($ant->Sistolic,1,",",".").' / '.number_format($ant->Diastolic,1,",",".").'</td></tr>
         */
-        $content.= '
-        <page format="216x280" backtop="4mm" backbottom="4mm" backleft="0mm" backright="0mm">
-        '.$page_header.'
-        '.$page_footer.'
-        <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-            <td class="width-160" style="text-align:left;">
-                <img src="logosalinas.png" width="120" />
-            </td>
-            <td class="width-250">
-                <h5 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h5>
-                <h5 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                Cirugía Digestiva y Obesidad</h5><br /><br />
-            </td>
-            <td class="width-330">
-                Ficha del paciente
-                <h4>'.$people->Name.' '.$people->Lastname.' </h4>
-            </td>
-
-        </tr>
-        </table>
-        <hr />
+        $content= '
         <table width="100%">
           <tr>
             <td class="width-330">
                 <h5>Información</h5>
                 <table width="100%" valign="top">
-                <tr><td class="width-120"><b>Nombre:</b></td><td>'.$people->Name.' '.$people->Lastname.'</td></tr>
+                <tr><td class="width-120"><b>Nombre:</b></td><td>'.ucwords(mb_strtolower($people->Name.' '.$people->Lastname,"utf-8")).'</td></tr>
                 <tr><td class="width-120"><b>RUT:</b></td><td>'.$people->CardCode.'</td></tr>
                 <tr><td class="width-120"><b>Edad:</b></td><td>'.$edad->format('%Y').' años y '.$edad->format('%m').' meses y '.$edad->format('%m').' días</td></tr>
                 <tr><td class="width-120"><b>Fecha Nac.:</b></td><td>'.date("d/m/Y", strtotime($people->Birthday)).'</td></tr>
@@ -432,23 +285,25 @@ class PdfController extends Controller
             $content .= '
             </td>
           </tr>
-        </table>
-        ';
+        </table><br /><br />';   
 
-        $content .= '<br /><br /></page>';   
-
+        $path = dirname(__FILE__)."/../../../resources/views/generic.html";
+        if (!file_exists($path)) {
+            throw new \Exception("not found template ".$path);
+        }
+        $fp = file_get_contents($path);
+        $fp = str_replace("{{html}}",$content,$fp);
+        $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
 
         //210x279
-        $md5 = md5(time());
         $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', 5);
         $html2pdf->pdf->SetDisplayMode('fullpage');
         $html2pdf->setDefaultFont('Arial');
         $html2pdf->pdf->setTitle("pdf ".$pdfname.".pdf");
-        $html2pdf->writeHTML($content); 
+        $html2pdf->writeHTML($fp); 
         $html2pdf->output("pdf ".$pdfname.".pdf");
         die();
     } 
-
     public function getRecipes($id) {
         $pdfname = "";
         $packs = Recipe::select(
@@ -458,7 +313,8 @@ class PdfController extends Controller
             'Peoples.Name as PeopleName',
             'Peoples.Lastname as PeopleLastname',
             'Diagnosis.Name as DiagnosisName',
-            'Peoples.CardCode as PeopleCardCode'
+            'Peoples.CardCode as PeopleCardCode',
+            'Peoples.Birthday as Birthday'
         )
         ->leftJoin('Dates', 'Dates.DateID', '=', 'Recipes.DateID')
         ->leftJoin('Peoples', 'Peoples.PeopleID', '=', 'Dates.PeopleID')
@@ -470,7 +326,8 @@ class PdfController extends Controller
             'Peoples.Name',
             'Peoples.Lastname',
             'Diagnosis.Name',
-            'Peoples.CardCode'
+            'Peoples.CardCode',
+            'Peoples.Birthday'
         )
         ->orderBy("Recipes.DateID","DESC")
         ->get();
@@ -496,120 +353,58 @@ class PdfController extends Controller
         ];
         $opt["Name"] = "";
         if ($packs[0]->PeopleName != "" && $packs[0]->PeopleLastname != "") {
-            $opt["Name"] = $packs[0]->PeopleName." ".$packs[0]->PeopleLastname;
-            $pdfname = $packs[0]->PeopleName." ".$packs[0]->PeopleLastname;
+            $opt["Name"] = ucwords(mb_strtolower($packs[0]->PeopleName." ".$packs[0]->PeopleLastname,"utf-8"));
+            $pdfname = ucwords(mb_strtolower($packs[0]->PeopleName." ".$packs[0]->PeopleLastname,"utf-8"));
         }
         $opt["Diagnosis"] = "";
         if ($packs[0]->DiagnosisName != "") {
             $opt["Diagnosis"] = $packs[0]->DiagnosisName;
         }
+        $opt["Birthday"] = "";
+        if ($packs[0]->Birthday != "") {
+            $opt["Birthday"] = $packs[0]->Birthday;
+        }
 
+        $ccc = $opt["CardCode"];
+        $ccc = str_replace(["-","."],["",""], $ccc);
+        $rut = number_format( substr ( $ccc, 0 , -1 ) , 0, "", ".") . '-' . substr ( $ccc, strlen($ccc) -1 , 1 );
+        if ($opt["Birthday"]=="") {
+            $opt["Birthday"] = date("Y-m-d H:i:s");
+        }
+        $fecha_nac = new \DateTime(date('Y/m/d',strtotime($opt["Birthday"]))); 
+        $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
+        $edad = date_diff($fecha_hoy,$fecha_nac); 
 
-        $page_header = '<page_header></page_header>'; 
-        $page_footer = '<page_footer>
-            <div style="text-align:right;">
-            <img src="firmasalinas.png" width="180" />
-            </div>
-            <div style="text-align:left; font-size:11px;">
-                Fecha, '.date("d/m/Y").'<br />
-                Centro de Cirugía Digestiva y Obesidad Clínica Puerto Varas<br />
-                www.drsalinas.cl
-            </div>
-        </page_footer>';
-        //$page_footer = '<page_footer>[[page_cu]]/[[page_nb]]</page_footer>'; 
-        $content = '
-        <style type="text/css">
-            <!-- 
-            .single-table { padding: 3px; }
-            .width-740 { width: 740px; }
-            .width-560 { width: 560px; }
-            .width-550 { width: 550px; }
-            .width-380 { width: 380px; }
-            .width-330 { width: 330px; }
-            .width-440 { width: 440px; }
-            .width-280 { width: 280px; }
-            .width-250 { width: 250px; }
-            .width-200 { width: 200px; }
-            .width-150 { width: 150px; }
-            .width-170 { width: 170px; }
-            .width-160 { width: 160px; }
-            .width-110 { width: 110px; }
-            .width-120 { width: 120px; }
-            .width-100 { width: 100px; }
-            .width-90 { width: 90px; }
-            .width-80 { width: 80px; }
-            .width-75 { width: 75px; }
-            .width-75 { width: 70px; }
-            .width-65 { width: 65px; }
-            .width-60 { width: 60px; }
-            .width-55 { width: 55px; }
-            .width-50 { width: 50px; }
-            .width-45 { width: 45px; }
-            .width-40 { width: 40px; }
-            .width-35 { width: 35px; }
-            .width-30 { width: 30px; }
-            .text-center { text-center:left; }
-            .text-left { text-align:left; }
-            .b { font-weight: bold; }
-            .cola {
-                border-collapse: collapse;
-            }
-            .cola td {
-                border:1px solid black;
-                font-size: 10px;
-                padding:3px;
-                height: 5px;
-                border-collapse: collapse;
-            }
-            h4 { font-style: italic; }
-            --> 
-        </style>';
-          
-        $content.= '
-        <page format="140x200" backtop="8mm" backbottom="8mm" backleft="0mm" backright="0mm">
-        '.$page_header.'
-        '.$page_footer.'
-        <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-            <td class="width-330">
-                <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
-                <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                Cirugía Digestiva y Obesidad</h4><br /><br />
-            </td>
+        $content="
+        <b>NOMBRE:</b> ".ucwords(mb_strtolower($opt["Name"],"utf-8"))."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>EDAD:</b> ".$edad->format("%Y")." años"."<br />
+        <b>RUT:</b> ".$rut."<br /> 
+        <b>DIAGNÓSTICO:</b> ".$opt["Diagnosis"]."<br />   
+        ";
 
-            <td class="width-160" style="text-align:right;">
-                <img src="logosalinas.png" width="120" />
-            </td>
-        </tr>
-        </table>
-        <hr />
-        <b>NOMBRE: '.$opt["Name"].'<br />
-        RUT: '.$opt["CardCode"].'<br />
-        DIAGNÓSTICO: '.$opt["Diagnosis"].'<br />
-        </b>
-        <h4>Rp</h4> 
-        ';
-
+        $content.= '<h4>Rp</h4>';
         foreach ($opt["data"] as $recipe) {
             $content .= "- <b>".$recipe->Name."</b><br>".$recipe->Dose."<br><br>";
-            //$content .= "- <b>".$recipe->Name."</b><br>Dosis: ".$recipe->Dose.", ".$recipe->Period." veces por ".$recipe->Periodicity." dias<br><br>";
         }
-        $content .= '<br /><br /></page>';   
-    
-    
+        $content .= '<br /><br />';
+
+        $path = dirname(__FILE__)."/../../../resources/views/generic.html";
+        if (!file_exists($path)) {
+            throw new \Exception("not found template ".$path);
+        }
+        $fp = file_get_contents($path);
+        $fp = str_replace("{{html}}",$content,$fp);
+        $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
 
         //210x279 
-        $md5 = md5(time());
         $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', 5);
         $html2pdf->pdf->SetDisplayMode('fullpage');
         $html2pdf->setDefaultFont('Arial');
         $html2pdf->pdf->setTitle("pdf ".$pdfname.".pdf");
-        $html2pdf->writeHTML($content); 
+        $html2pdf->writeHTML($fp); 
         $html2pdf->output("pdf ".$pdfname.".pdf");
         die();
 
     } 
-
     public function getCertificateSingle($id) {
         setlocale(LC_TIME, 'es_CL.UTF-8','esp');
 
@@ -713,7 +508,6 @@ class PdfController extends Controller
             }
         } 
 
-
         $txt_medicos = ""; 
         $inv = Interview::select("Interviews.*","Specialists.Name as SpecialistName")
                 ->leftJoin("Specialists","Specialists.SpecialistID","=","Interviews.SpecialistID")
@@ -736,22 +530,20 @@ class PdfController extends Controller
             $ella_el = "la";
         }
 
-
-        
+        $fp = str_replace("{{nombre}}",ucwords(mb_strtolower($cert->PeopleName." ".$cert->PeopleLastname),"utf-8"),$fp);
         $fp = str_replace("{{edad}}",$edad->format("%Y")." años",$fp);
+        $fp = str_replace("{{diagnostico}}",$cert->DiagnosisName,$fp); 
+        $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
         $fp = str_replace("{{ella_el}}",$ella_el,$fp);
         $fp = str_replace("{{descripcion}}",$cert->Description,$fp);
         $fp = str_replace("{{profession}}",$cert->Profession,$fp);
         $fp = str_replace("{{fecha_cirugia}}",$dc,$fp);
-        $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
-        $fp = str_replace("{{nombre}}",$cert->PeopleName." ".$cert->PeopleLastname,$fp);
         $fp = str_replace("{{rut}}",$rut,$fp); 
         $fp = str_replace("{{allergy}}",$cert->AntAllergy,$fp); 
         $fp = str_replace("{{drugs}}",$cert->AntDrugs,$fp); 
         $fp = str_replace("{{medical}}",$cert->AntMedical,$fp); 
         $fp = str_replace("{{surgical}}",$cert->AntSurgical,$fp); 
         $fp = str_replace("{{surgery}}",$cert->SurgeryName,$fp); 
-        $fp = str_replace("{{diagnostico}}",$cert->DiagnosisName,$fp); 
         $fp = str_replace("{{imc}}",$imc,$fp); 
         $fp = str_replace("{{weight}}",$cert->Weight. "kgs",$fp); 
         $fp = str_replace("{{height}}",$cert->Height." cms",$fp); 
@@ -763,7 +555,6 @@ class PdfController extends Controller
 
 
         //210x279 
-        $md5 = md5(time());
         $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', 5);
         $html2pdf->pdf->SetDisplayMode('fullpage');
         $html2pdf->setDefaultFont('Arial');
@@ -773,8 +564,6 @@ class PdfController extends Controller
         die();
 
     } 
-
-
     public function getInterview($id) {
         setlocale(LC_TIME, 'es_CL.UTF-8','esp');
 
@@ -786,7 +575,8 @@ class PdfController extends Controller
             "Specialists.Name as SpecialistName",
             "Peoples.Name as Name",
             "Peoples.CardCode as CardCode",
-            "Diagnosis.Name as Diagnosis"
+            "Diagnosis.Name as Diagnosis",
+            "Peoples.Birthday as Birthday"
         )
         ->join("Users","Users.UserID","=","Interviews.CreatedUserID")
         ->join("Specialists","Specialists.SpecialistID","=","Interviews.SpecialistID")
@@ -795,96 +585,34 @@ class PdfController extends Controller
         ->leftJoin("Peoples","Peoples.PeopleID","=","Interviews.PeopleID")
         ->where("Interviews.InterviewID", $id)
         ->orderBy("CreatedAt","DESC")
-        ->first();
+        ->first(); 
 
+        $ccc = $interview->CardCode;
+        $ccc = str_replace(["-","."],["",""], $ccc);
+        $rut = number_format( substr ( $ccc, 0 , -1 ) , 0, "", ".") . '-' . substr ( $ccc, strlen($ccc) -1 , 1 );
+        if ($interview->Birthday=="") {
+            $interview->Birthday = date("Y-m-d H:i:s");
+        }
+        $fecha_nac = new \DateTime(date('Y/m/d',strtotime($interview->Birthday))); 
+        $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
+        $edad = date_diff($fecha_hoy,$fecha_nac); 
 
-        $page_header = '<page_header></page_header>'; 
-        $page_footer = '<page_footer>
-            <div style="text-align:right;">
-            <img src="firmasalinas.png" width="180" />
-            </div>
-            <div style="text-align:left; font-size:11px;">
-                Fecha, '.date("d/m/Y").'<br />
-                Centro de Cirugía Digestiva y Obesidad Clínica Puerto Varas<br />
-                www.drsalinas.cl
-            </div>
-        </page_footer>';
-        $content = '
-        <style type="text/css">
-            <!-- 
-            .single-table { padding: 3px; }
-            .width-740 { width: 740px; }
-            .width-560 { width: 560px; }
-            .width-550 { width: 550px; }
-            .width-380 { width: 380px; }
-            .width-330 { width: 330px; }
-            .width-440 { width: 440px; }
-            .width-280 { width: 280px; }
-            .width-250 { width: 250px; }
-            .width-200 { width: 200px; }
-            .width-150 { width: 150px; }
-            .width-170 { width: 170px; }
-            .width-160 { width: 160px; }
-            .width-110 { width: 110px; }
-            .width-120 { width: 120px; }
-            .width-100 { width: 100px; }
-            .width-90 { width: 90px; }
-            .width-80 { width: 80px; }
-            .width-75 { width: 75px; }
-            .width-75 { width: 70px; }
-            .width-65 { width: 65px; }
-            .width-60 { width: 60px; }
-            .width-55 { width: 55px; }
-            .width-50 { width: 50px; }
-            .width-45 { width: 45px; }
-            .width-40 { width: 40px; }
-            .width-35 { width: 35px; }
-            .width-30 { width: 30px; }
-            .text-center { text-center:left; }
-            .text-left { text-align:left; }
-            .b { font-weight: bold; }
-            .cola {
-                border-collapse: collapse;
-            }
-            .cola td {
-                border:1px solid black;
-                font-size: 10px;
-                padding:3px;
-                height: 5px;
-                border-collapse: collapse;
-            }
-            --> 
-        </style>';
+        $content="
+        <b>NOMBRE:</b> ".ucwords(mb_strtolower($interview->Name,"utf-8"))."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>EDAD:</b> ".$edad->format("%Y")." años"."<br />
+        <b>RUT:</b> ".$rut."<br /> 
+        <b>DIAGNÓSTICO:</b> ".$interview->Diagnosis."<br />   
+        ";
 
-        $content.= '
-        <page format="140x200" backtop="8mm" backbottom="20mm" backleft="0mm" backright="0mm">
-        '.$page_header.'
-        '.$page_footer.'
-        <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-            <td class="width-330">
-                <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
-                <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
-                Cirugía Digestiva y Obesidad
-                </h4><br /><br />
-            </td>
-
-            <td class="width-160" style="text-align:right;">
-                <img src="logosalinas.png" width="120" />
-            </td>
-        </tr>
-        </table>
-        <hr />
-        <b>NOMBRE: '.$interview->Name.'<br />
-        RUT: '.$interview->CardCode.'<br />
-        DIAGNÓSTICO: '.$interview->Diagnosis.'<br />
-        </b>
-        <h4>Interconsulta</h4>
-        <b>Especialidad: </b> '.$interview->SpecialistName.' '.$interview->Description.'<br />'.$interview->WantText.'<br /></page>';   
+        $content .= '<h4>Interconsulta</h4><b>Especialidad: </b> '.$interview->SpecialistName.' '.$interview->Description.'<br />'.$interview->WantText.'<br /></page>';   
+        $path = dirname(__FILE__)."/../../../resources/views/generic.html";
+        if (!file_exists($path)) {
+            throw new \Exception("not found template ".$path);
+        }
+        $fp = file_get_contents($path);
+        $fp = str_replace("{{html}}",$content,$fp);
+        $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
         
-
         //210x279 
-        $md5 = md5(time());
         $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', 5);
         $html2pdf->pdf->SetDisplayMode('fullpage');
         $html2pdf->setDefaultFont('Arial');
