@@ -234,6 +234,16 @@ Route::group([
         Route::get('/{id}/vb', 'InterviewController@vb');
     });
 
+    Route::group([
+        'prefix' => 'interview',
+        'middleware' => 'singles'
+    ], function($router) { 
+        Route::post('/order', 'SingleController@saveOrder');
+        Route::post('/recipe', 'SingleController@saveRecipe');
+        Route::delete('/order/{id}', 'SingleController@deleteOrder');
+        Route::delete('/recipe/{id}', 'SingleController@deleteRecipe');
+    });
+
     /* Auth */
     Route::group([
         'prefix' => 'auth'
@@ -253,6 +263,8 @@ Route::group([
         Route::get('certs-single/{id}', 'PdfController@getCertificateSingle');
         Route::get('certs-interview/{id}', 'PdfController@getInterview');
         Route::get('people/{id}', 'PdfController@getPeople');
+        Route::get('single-recipes/{id}', 'PdfController@getSingleRecipe');
+        Route::get('data-single-orders/{id}', 'PdfController@getSingleOrder');
     });
 
     Route::get('master','AuthController@master');
