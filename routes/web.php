@@ -235,8 +235,8 @@ Route::group([
     });
 
     Route::group([
-        'prefix' => 'interview',
-        'middleware' => 'singles'
+        'prefix' => 'singles',
+        'middleware' => 'auth'
     ], function($router) { 
         Route::post('/order', 'SingleController@saveOrder');
         Route::post('/recipe', 'SingleController@saveRecipe');
