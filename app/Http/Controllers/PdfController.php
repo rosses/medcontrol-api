@@ -115,6 +115,167 @@ class PdfController extends Controller {
                 $fecha_nac = new \DateTime(date('Y/m/d',strtotime($dates["Birthday"]))); 
                 $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
                 $edad = date_diff($fecha_hoy,$fecha_nac); 
+
+                $content.="
+                <b>NOMBRE:</b> ".ucwords(mb_strtolower($dates["Name"],"utf-8"))."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>EDAD:</b> ".$edad->format("%Y")." años"."<br />
+                <b>RUT:</b> ".$rut."<br /> 
+                <b>DIAGNÓSTICO:</b> ".$dates["Diagnosis"]."<br />  
+                ";
+                $content.= '<h4 style="font-style:italic;">Rp</h4><b>'.$datas["ExamTypeName"].'</b><br />';
+                foreach ($datas["Exams"] as $exm) {
+                    $content .= "- ".$exm."<br>";
+                } 
+
+                if (isset($dates["data"][$idx+1])) {
+                    $content.='</page>
+                    <page format="140x200" backtop="23mm" backbottom="25mm" backleft="0mm" backright="0mm">
+                    <page_header>
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td class="width-300">
+                                    <h4 style="margin:0;padding:0;" class="text-left">DR. JOSÉ SALINAS ACEVEDO</h4>
+                                    <h4 style="margin:0;padding:0;font-weight:normal;" class="text-left">
+                                    Cirugía Digestiva y Obesidad</h4>
+                                </td>
+                        
+                                <td class="width-160" style="text-align:right;">
+                                    <img src="logosalinas.png" width="180" />
+                                </td>
+                            </tr>
+                        </table>
+                        <hr />
+                    </page_header>
+                    <page_footer>
+                        <div style="text-align:right;">
+                            <img src="firmasalinas.png" width="180" />
+                        </div>
+                        <div style="text-align:left; font-size:11px;">
+                            Fecha, {{fecha}}<br />
+                            Centro de Cirugía Digestiva y Obesidad Clínica Puerto Varas<br />
+                            www.drsalinas.cl
+                        </div>
+                    </page_footer>
+                    ';   
+                }
+            }
+        }
+ 
+
+        $path = dirname(__FILE__)."/../../../resources/views/generic.html";
+        if (!file_exists($path)) {
+            throw new \Exception("not found template ".$path);
+        }   
+        $fp = file_get_contents($path);
+        $fp = str_replace("{{html}}",$content,$fp);
+        $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
+
+        //210x279 
+        $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', 5);
+        $html2pdf->pdf->SetDisplayMode('fullpage');
+        $html2pdf->setDefaultFont('Arial');
+        $html2pdf->pdf->setTitle("pdf ".$pdfname.".pdf");
+        $html2pdf->writeHTML($fp); 
+        $html2pdf->output("pdf ".$pdfname.".pdf");
+        die();
+
+    } 
+    public function getSingleOrder($id) {
+        $pdfname = "";
+        $packs = Order::select(
+            'Orders.GroupSingleID as DateID',
+            DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120) as Date'),
+            DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108) as Time'),
+            'Peoples.Name as PeopleName',
+            'Peoples.Lastname as PeopleLastname',
+            'Peoples.CardCode as PeopleCardCode',
+            'Peoples.Birthday as PeopleBirthday',
+            DB::raw("ISNULL((SELECT TOP 1 D.Name FROM Dates DT INNER JOIN Diagnosis D ON D.DiagnosisID = DT.DiagnosisID WHERE DT.PeopleID = Peoples.PeopleID ORDER BY DT.DateID DESC),'') as DiagnosisName")
+        )
+        ->join('GroupSingles', 'GroupSingles.GroupSingleID', '=', 'Orders.GroupSingleID')
+        ->join('Peoples', 'Peoples.PeopleID', '=', 'Orders.PeopleID')
+        ->where("GroupSingles.GroupSingleID",$id)
+        ->groupBy(
+            "Orders.GroupSingleID",
+            DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120)'),
+            DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108)'),
+            'Peoples.Name',
+            'Peoples.Lastname',
+            'Peoples.CardCode',
+            'Peoples.Birthday',
+            'Peoples.PeopleID'
+        )
+        ->orderBy("Orders.GroupSingleID","DESC")
+        ->get();
+
+        foreach ($packs as $pack) {
+            $exams = Order::select(
+                DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120) as Date'),
+                DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108) as Time'),
+                'Exams.ExamTypeID',
+                'Exams.Name as ExamName',
+                'ExamTypes.Name as ExamTypeName'
+            )
+            ->join('GroupSingles', 'GroupSingles.GroupSingleID', '=', 'Orders.GroupSingleID')
+            ->join('Exams', 'Exams.ExamID', '=', 'Orders.ExamID')
+            ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
+            ->where('Orders.GroupSingleID', $id)
+            ->orderBy('ExamTypes.Name','ASC')
+            ->groupBy(
+                DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120)'),
+                DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108)'),
+                'Exams.ExamTypeID',
+                'Exams.Name',
+                'ExamTypes.Name'
+            )
+            ->get();
+
+            $rows  = [];
+            $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
+            $lastExamTypeID = "";
+            foreach ($exams as $ex) {
+                if ($lastExamTypeID!="" && $ex->ExamTypeID != $lastExamTypeID) {
+                    $rows[] = $acc;
+                    $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
+                }
+                $acc["ExamTypeID"] = $ex->ExamTypeID;
+                $acc["ExamTypeName"] = $ex->ExamTypeName;
+                $acc["Exams"][] = $ex->ExamName;
+
+                $lastExamTypeID = $ex->ExamTypeID;
+            }
+            if (count($acc)>0) {
+                $rows[] = $acc;
+            }
+            $opt = [
+                "DateID" => $pack->DateID,
+                "Date" => $pack->Date,
+                "Time" => $pack->Time,
+                "data" => $rows,
+                "Name" => "",
+                "Diagnosis" => "",
+                "CardCode" => $pack->PeopleCardCode,
+                "Birthday" => $pack->PeopleBirthday
+            ];
+            if ($pack->PeopleName != "" && $pack->PeopleLastname != "") {
+                $opt["Name"] = $pack->PeopleName." ".$pack->PeopleLastname;
+                $pdfname = $pack->PeopleName." ".$pack->PeopleLastname;
+            }
+            if ($pack->DiagnosisName != "") {
+                $opt["Diagnosis"] = $pack->DiagnosisName;
+            }
+            $output[] = $opt;            
+        } 
+        
+        $content="";
+        foreach ($output as $dates) {
+            foreach ($dates["data"] as $idx=>$datas) {
+
+                $ccc = $dates["CardCode"];
+                $ccc = str_replace(["-","."],["",""], $ccc);
+                $rut = number_format( substr ( $ccc, 0 , -1 ) , 0, "", ".") . '-' . substr ( $ccc, strlen($ccc) -1 , 1 );
+                $fecha_nac = new \DateTime(date('Y/m/d',strtotime($dates["Birthday"]))); 
+                $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
+                $edad = date_diff($fecha_hoy,$fecha_nac); 
                 
                 $content.="
                 <b>NOMBRE:</b> ".ucwords(mb_strtolower($dates["Name"],"utf-8"))."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>EDAD:</b> ".$edad->format("%Y")." años"."<br />
@@ -383,6 +544,109 @@ class PdfController extends Controller {
             "data" => $recipes, 
             "CardCode" => $packs[0]->PeopleCardCode
         ];
+        $opt["Name"] = "";
+        if ($packs[0]->PeopleName != "" && $packs[0]->PeopleLastname != "") {
+            $opt["Name"] = ucwords(mb_strtolower($packs[0]->PeopleName." ".$packs[0]->PeopleLastname,"utf-8"));
+            $pdfname = ucwords(mb_strtolower($packs[0]->PeopleName." ".$packs[0]->PeopleLastname,"utf-8"));
+        }
+        $opt["Diagnosis"] = "";
+        if ($packs[0]->DiagnosisName != "") {
+            $opt["Diagnosis"] = $packs[0]->DiagnosisName;
+        }
+        $opt["Birthday"] = "";
+        if ($packs[0]->Birthday != "") {
+            $opt["Birthday"] = $packs[0]->Birthday;
+        }
+
+        $ccc = $opt["CardCode"];
+        $ccc = str_replace(["-","."],["",""], $ccc);
+        $rut = number_format( substr ( $ccc, 0 , -1 ) , 0, "", ".") . '-' . substr ( $ccc, strlen($ccc) -1 , 1 );
+        if ($opt["Birthday"]=="") {
+            $opt["Birthday"] = date("Y-m-d H:i:s");
+        }
+        $fecha_nac = new \DateTime(date('Y/m/d',strtotime($opt["Birthday"]))); 
+        $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
+        $edad = date_diff($fecha_hoy,$fecha_nac); 
+
+        $content="
+        <b>NOMBRE:</b> ".ucwords(mb_strtolower($opt["Name"],"utf-8"))."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>EDAD:</b> ".$edad->format("%Y")." años"."<br />
+        <b>RUT:</b> ".$rut."<br /> 
+        <b>DIAGNÓSTICO:</b> ".$opt["Diagnosis"]."<br />   
+        ";
+
+        $content.= '<h4 style="font-style:italic;">Rp</h4>';
+        foreach ($opt["data"] as $recipe) {
+            $content .= "- <b>".$recipe->Name."</b><br>".$recipe->Dose."<br><br>";
+        }
+        $content .= '<br /><br />';
+
+        $path = dirname(__FILE__)."/../../../resources/views/generic.html";
+        if (!file_exists($path)) {
+            throw new \Exception("not found template ".$path);
+        }
+        $fp = file_get_contents($path);
+        $fp = str_replace("{{html}}",$content,$fp);
+        $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
+
+        //210x279 
+        $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', 5);
+        $html2pdf->pdf->SetDisplayMode('fullpage');
+        $html2pdf->setDefaultFont('Arial');
+        $html2pdf->pdf->setTitle("pdf ".$pdfname.".pdf");
+        $html2pdf->writeHTML($fp); 
+        $html2pdf->output("pdf ".$pdfname.".pdf");
+        die();
+
+    } 
+    public function getSingleRecipe($id) {
+        $pdfname = "";
+        $packs = Recipe::select(
+            'Recipes.GroupSingleID as DateID',
+            DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120) as Date'),
+            DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108) as Time'),
+            'Peoples.Name as PeopleName',
+            'Peoples.Lastname as PeopleLastname',
+            'Peoples.CardCode as PeopleCardCode',
+            'Peoples.Birthday as Birthday',
+            DB::raw("ISNULL((SELECT TOP 1 D.Name FROM Dates DT INNER JOIN Diagnosis D ON D.DiagnosisID = DT.DiagnosisID WHERE DT.PeopleID = Peoples.PeopleID ORDER BY DT.DateID DESC),'') as DiagnosisName")
+        )
+        ->join('GroupSingles', 'GroupSingles.GroupSingleID', '=', 'Recipes.GroupSingleID')
+        ->join('Peoples', 'Peoples.PeopleID', '=', 'Recipes.PeopleID')
+        ->where("GroupSingles.GroupSingleID",$id)
+        ->groupBy(
+            "Recipes.GroupSingleID",
+            DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120)'),
+            DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108)'),
+            'Peoples.Name',
+            'Peoples.Lastname',
+            'Peoples.CardCode',
+            'Peoples.Birthday',
+            'Peoples.PeopleID'
+        )
+        ->orderBy("Recipes.GroupSingleID","DESC")
+        ->get();
+
+        $recipes = Recipe::select(
+            DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120) as Date'),
+            DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108) as Time'),
+            'Medicines.Name',
+            'Recipes.*'
+        )
+        ->join('GroupSingles', 'GroupSingles.GroupSingleID', '=', 'Recipes.GroupSingleID')
+        ->join('Medicines', 'Medicines.MedicineID', '=', 'Recipes.MedicineID')
+        ->where('Recipes.GroupSingleID', $id)
+        ->orderBy('Medicines.Name','ASC')
+        ->get();
+            
+        $opt = [
+            "DateID" => $packs[0]->DateID,
+            "Date" => $packs[0]->Date,
+            "Time" => $packs[0]->Time,
+            "data" => $recipes, 
+            "CardCode" => $packs[0]->PeopleCardCode
+        ];
+        //echo "<pre>".print_r($opt,1)."</pre>"; die();
+
         $opt["Name"] = "";
         if ($packs[0]->PeopleName != "" && $packs[0]->PeopleLastname != "") {
             $opt["Name"] = ucwords(mb_strtolower($packs[0]->PeopleName." ".$packs[0]->PeopleLastname,"utf-8"));

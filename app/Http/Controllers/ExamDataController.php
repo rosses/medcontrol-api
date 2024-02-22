@@ -25,27 +25,54 @@ class ExamDataController extends Controller
     }
     public function saveResults(Request $request) {
         try {
-            if ($request->data && is_array($request->data)) {
-                foreach ($request->data as $d) {
-                    $edv = new ExamDataValue();
-                    if (isset($d["ExamDataValueID"]) && $d["ExamDataValueID"]!=0) {
-                        $edv = ExamDataValue::find($d["ExamDataValueID"]);
-                    }
-                    $OrderID = 0;
-                    $order = Order::where("DateID", $request->DateID)->where("ExamID", $d["ExamID"])->first();
-                    if ($order) {
-                        $OrderID = $order->OrderID;
-                    }
-                    if ($OrderID > 0) {
-                        if (isset($d["Value"])) {
-                            $edv->OrderID = $OrderID;
-                            $edv->DateID = $request->DateID;
-                            $edv->ExamDataID = $d["ExamDataID"];
-                            $edv->Value = $d["Value"];                        
-                            $edv->save();
+            if (isset($request->DateID) && $request->DateID!="" && intval($request->DateID) > 0) {
+                if ($request->data && is_array($request->data)) {
+                    foreach ($request->data as $d) {
+                        $edv = new ExamDataValue();
+                        if (isset($d["ExamDataValueID"]) && $d["ExamDataValueID"]!=0) {
+                            $edv = ExamDataValue::find($d["ExamDataValueID"]);
+                        }
+                        $OrderID = 0;
+                        $order = Order::where("DateID", $request->DateID)->where("ExamID", $d["ExamID"])->first();
+                        if ($order) {
+                            $OrderID = $order->OrderID;
+                        }
+                        if ($OrderID > 0) {
+                            if (isset($d["Value"])) {
+                                $edv->OrderID = $OrderID;
+                                $edv->DateID = $request->DateID;
+                                $edv->GroupSingleID = 0;
+                                $edv->ExamDataID = $d["ExamDataID"];
+                                $edv->Value = $d["Value"];                        
+                                $edv->save();
+                            }
                         }
                     }
-
+                }
+            }
+            else if (isset($request->SingleID) && $request->SingleID!="" && intval($request->SingleID) > 0) {
+                if ($request->data && is_array($request->data)) {
+                    foreach ($request->data as $d) {
+                        $edv = new ExamDataValue();
+                        if (isset($d["ExamDataValueID"]) && $d["ExamDataValueID"]!=0) {
+                            $edv = ExamDataValue::find($d["ExamDataValueID"]);
+                        }
+                        $OrderID = 0;
+                        $order = Order::where("GroupSingleID", $request->SingleID)->where("ExamID", $d["ExamID"])->first();
+                        if ($order) {
+                            $OrderID = $order->OrderID;
+                        }
+                        if ($OrderID > 0) {
+                            if (isset($d["Value"])) {
+                                $edv->OrderID = $OrderID;
+                                $edv->DateID = 0;
+                                $edv->GroupSingleID = $request->SingleID;
+                                $edv->ExamDataID = $d["ExamDataID"];
+                                $edv->Value = $d["Value"];                        
+                                $edv->save();
+                            }
+                        }
+                    }
                 }
             }
             return response()->json([
@@ -64,6 +91,11 @@ class ExamDataController extends Controller
         $rows = ExamDataValue::where("DateID", $DateID)->get();
         return response()->json($rows, 200);
     }
+    public function getExamValuesByGroup($GroupSingleID) {
+        $rows = ExamDataValue::where("GroupSingleID", $GroupSingleID)->get();
+        return response()->json($rows, 200);
+    }
+    
     public function create(Request $request) {
         $row = ExamData::create($request->all());
         return response()->json($row, 201);

@@ -15,6 +15,7 @@ use App\Models\ExamData;
 use App\Models\Order;
 use App\Models\Recipe;
 use App\Models\Surgery;
+use App\Models\GroupSingle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; 
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -354,13 +355,75 @@ class PeopleController extends Controller
     public function examsForPeople($id) {
 
         $output = [];
+        // BASED ON SINGLE
+        $packs = GroupSingle::select(
+                        'GroupSingles.GroupSingleID',
+                        DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120) as Date'),
+                        DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108) as Time'),
+                        DB::raw('\'GS\' as OrderType'),
+                    )
+                    ->join("Orders","Orders.GroupSingleID","=","GroupSingles.GroupSingleID")
+                    ->where("Orders.PeopleID",$id)
+                    ->where("GroupSingles.Type","=","order")
+                    ->orderBy("GroupSingles.CreatedAt","DESC")
+                    ->get();
+        foreach ($packs as $pack) {
+            $exams = Order::select(
+                DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120) as Date'),
+                DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108) as Time'),
+                'Exams.ExamTypeID',
+                'Exams.Name as ExamName',
+                'ExamTypes.Name as ExamTypeName'
+            )
+            ->leftJoin('GroupSingles', 'GroupSingles.GroupSingleID', '=', 'Orders.GroupSingleID')
+            ->join('Exams', 'Exams.ExamID', '=', 'Orders.ExamID')
+            ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
+            ->where('Orders.PeopleID', $id)
+            ->where('Orders.GroupSingleID', $pack->GroupSingleID)
+            ->orderBy('ExamTypes.Name','ASC')
+            ->groupBy(
+                DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120)'),
+                DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108)'),
+                'Exams.ExamTypeID',
+                'Exams.Name',
+                'ExamTypes.Name'
+            )
+            ->get();
+
+            $rows  = [];
+            $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
+            $lastExamTypeID = "";
+            foreach ($exams as $ex) {
+                if ($lastExamTypeID!="" && $ex->ExamTypeID != $lastExamTypeID) {
+                    $rows[] = $acc;
+                    $acc = [ "ExamTypeName" => "", "ExamTypeID" => "", "Exams" => [] ];
+                }
+                $acc["ExamTypeID"] = $ex->ExamTypeID;
+                $acc["ExamTypeName"] = $ex->ExamTypeName;
+                $acc["Exams"][] = $ex->ExamName;
+
+                $lastExamTypeID = $ex->ExamTypeID;
+            }
+            if (count($acc)>0) { $rows[] = $acc; }
+            $output[] = [
+                "DateID" => $pack->GroupSingleID,
+                "Date" => $pack->Date,
+                "Time" => $pack->Time,
+                "OrderType" => $pack->OrderType,
+                "data" => $rows,
+            ];
+        } 
+
+        /// BASED ON DATES 
         $packs = Order::select(
-                        'Orders.DateID',
+                        'Orders.DateID as DateID',
                         'Dates.Date as Date',
                         'Dates.Time as Time',
+                        DB::raw('\'DT\' as OrderType'),
                     )
                     ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
                     ->where("Orders.PeopleID",$id)
+                    ->where("Orders.DateID",">","0")
                     ->groupBy("Orders.DateID","Dates.Date","Dates.Time")
                     ->orderBy("Orders.DateID","DESC")
                     ->get();
@@ -375,7 +438,6 @@ class PeopleController extends Controller
             ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
             ->join('Exams', 'Exams.ExamID', '=', 'Orders.ExamID')
             ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
-            //->where('Exams.Active',1)
             ->where('Orders.PeopleID', $id)
             ->where('Orders.DateID', $pack->DateID)
             ->orderBy('ExamTypes.Name','ASC')
@@ -399,7 +461,6 @@ class PeopleController extends Controller
                 $acc["ExamTypeID"] = $ex->ExamTypeID;
                 $acc["ExamTypeName"] = $ex->ExamTypeName;
                 $acc["Exams"][] = $ex->ExamName;
-
                 $lastExamTypeID = $ex->ExamTypeID;
             }
             if (count($acc)>0) {
@@ -410,6 +471,7 @@ class PeopleController extends Controller
                 "DateID" => $pack->DateID,
                 "Date" => $pack->Date,
                 "Time" => $pack->Time,
+                "OrderType" => $pack->OrderType,
                 "data" => $rows
             ];
         } 
@@ -439,14 +501,70 @@ class PeopleController extends Controller
     public function recipesForPeople($id) {
 
         $output = [];
+
+        // BASED ON SINGLE
+        $packs = GroupSingle::select(
+            'GroupSingles.GroupSingleID',
+            DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120) as Date'),
+            DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108) as Time'),
+            DB::raw('\'GS\' as OrderType'),
+        )
+        ->join("Recipes","Recipes.GroupSingleID","=","GroupSingles.GroupSingleID")
+        ->where("Recipes.PeopleID",$id)
+        ->where("GroupSingles.Type","=","recipe")
+        ->orderBy("GroupSingles.CreatedAt","DESC")
+        ->get();
+
+
+        foreach ($packs as $pack) {
+
+            $meds = Recipe::select(
+                DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120) as Date'),
+                DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108) as Time'),
+                'Medicines.Name as MedicineName',
+                'Recipes.Dose',
+                'Recipes.Period',
+                'Recipes.Periodicity',
+            )
+            ->leftJoin('GroupSingles', 'GroupSingles.GroupSingleID', '=', 'Recipes.GroupSingleID')
+            ->join('Medicines', 'Medicines.MedicineID', '=', 'Recipes.MedicineID') 
+            ->where('Recipes.PeopleID', $id)
+            ->where('GroupSingles.GroupSingleID', $pack->GroupSingleID)
+            ->groupBy(
+                DB::raw('CONVERT(varchar(10), GroupSingles.CreatedAt, 120)'),
+                DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108)'),
+                'Medicines.Name',
+                'Recipes.Dose',
+                'Recipes.Period',
+                'Recipes.Periodicity'
+            )
+            ->get();
+
+            $rows  = [];
+            foreach ($meds as $m) {
+                $rows[] = $m;
+            }
+
+            $output[] = [
+                "DateID" => $pack->GroupSingleID,
+                "Date" => $pack->Date,
+                "Time" => $pack->Time,
+                "OrderType" => $pack->OrderType,
+                "data" => $rows
+            ];
+        } 
+
+        // BY DATES
         $packs = Recipe::select(
                         'Recipes.DateID',
                         'Dates.Date as Date',
-                        'Dates.Time as Time'
+                        'Dates.Time as Time',
+                        DB::raw('\'DT\' as OrderType'),
                     )
                     ->leftJoin('Dates', 'Dates.DateID', '=', 'Recipes.DateID')
                     ->join('Medicines', 'Medicines.MedicineID', '=', 'Recipes.MedicineID') 
                     ->where('Recipes.PeopleID', $id)
+                    ->where('Recipes.DateID',">","0")
                     ->groupBy("Recipes.DateID","Dates.Date","Dates.Time")
                     ->orderBy("Recipes.DateID","DESC")
                     ->get();
@@ -484,6 +602,7 @@ class PeopleController extends Controller
                 "DateID" => $pack->DateID,
                 "Date" => $pack->Date,
                 "Time" => $pack->Time,
+                "OrderType" => $pack->OrderType,
                 "data" => $rows
             ];
         } 
