@@ -896,11 +896,9 @@ class PdfController extends Controller {
         $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
         $edad = date_diff($fecha_hoy,$fecha_nac); 
 
-        $content="
-        <b>NOMBRE:</b> ".ucwords(mb_strtolower($interview->Name,"utf-8"))."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>EDAD:</b> ".$edad->format("%Y")." años"."<br />
+        $content="<b>NOMBRE:</b> ".ucwords(mb_strtolower($interview->Name,"utf-8"))."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>EDAD:</b> ".$edad->format("%Y")." años"."<br />
         <b>RUT:</b> ".$rut."<br /> 
-        <b>DIAGNÓSTICO:</b> ".$interview->Diagnosis."<br />   
-        ";
+        <b>DIAGNÓSTICO:</b> ".$interview->Diagnosis."<br />";
 
         $content .= '<h4>Interconsulta</h4><b>Especialidad: </b> '.$interview->SpecialistName.' '.$interview->Description.'<br />'.$interview->WantText.'<br />';   
         $path = dirname(__FILE__)."/../../../resources/views/generic.html";
