@@ -916,7 +916,7 @@ class PdfController extends Controller {
         $html2pdf->pdf->SetDisplayMode('fullpage');
         $html2pdf->setDefaultFont('Arial');
         $html2pdf->pdf->setTitle("pdf ".$pdfname.".pdf");
-        $html2pdf->writeHTML($content); 
+        $html2pdf->writeHTML($fp); 
         $html2pdf->output("pdf ".$pdfname.".pdf");
         die();
 
