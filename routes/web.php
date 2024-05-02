@@ -184,6 +184,7 @@ Route::group([
         Route::get('/{id}/text', 'PeopleController@getText');
         Route::post('/{id}/change-status', 'PeopleController@changeStatus');
         Route::post('/{id}/change-dates', 'PeopleController@changeDates');
+        Route::post('/{id}/change-dates2', 'PeopleController@changeDates2');
         Route::get('/{id}', 'PeopleController@show');
         Route::post('/', 'PeopleController@create');
         Route::post('/{id}', 'PeopleController@update');

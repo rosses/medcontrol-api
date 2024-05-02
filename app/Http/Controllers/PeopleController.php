@@ -16,6 +16,7 @@ use App\Models\Order;
 use App\Models\Recipe;
 use App\Models\Surgery;
 use App\Models\GroupSingle;
+use App\Models\PeopleDate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; 
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -264,6 +265,67 @@ class PeopleController extends Controller
             ], 400);
         }
     }
+    public function changeDates2($id, Request $request) {
+        try {
+
+
+            $refPeople = People::find($id); // too have $request->PeopleID
+            $p = PeopleDate::where("PeopleID",$id);
+            if (!$p) {
+                $p = new PeopleDate();
+                $p->PeopleID = $id;
+            }
+            if ($request->DatePost1) {
+                $p->DatePost1 = $request->DatePost1;
+            }
+            if ($request->DatePost2) {
+                $p->DatePost2 = $request->DatePost2;
+            }
+            if ($request->DatePost3) {
+                $p->DatePost3 = $request->DatePost3;
+            }
+            if ($request->DatePost4) {
+                $p->DatePost4 = $request->DatePost4;
+            }
+            if ($request->DatePost5) {
+                $p->DatePost5 = $request->DatePost5;
+            }
+            if ($request->DatePost6) {
+                $p->DatePost6 = $request->DatePost6;
+            }
+
+            if ($request->DateMsg1) {
+                $p->DateMsg1 = $request->DateMsg1;
+            }
+            if ($request->DateMsg2) {
+                $p->DateMsg2 = $request->DateMsg2;
+            }
+            if ($request->DateMsg3) {
+                $p->DateMsg3 = $request->DateMsg3;
+            }
+            if ($request->DateMsg4) {
+                $p->DateMsg4 = $request->DateMsg4;
+            }
+            if ($request->DateMsg5) {
+                $p->DateMsg5 = $request->DateMsg5;
+            }
+            if ($request->DateMsg6) {
+                $p->DateMsg6 = $request->DateMsg6;
+            }
+
+            $p->save();
+
+            return response()->json([
+                "success" => true,
+                "data" => $p
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                "message" => $e->getMessage()
+            ], 400);
+        }
+    }
     public function changeStatus($id, Request $request) {
         try {
 
@@ -487,6 +549,13 @@ class PeopleController extends Controller
                             ->get();
                             
         return response()->json($evolutions);
+    }
+    public function postForPeople($id) {
+        $dates =  PeopleDate::select("PeopleDates.*")
+                            ->where("PeopleDates.PeopleID", $id)
+                            ->first();
+                            
+        return response()->json($dates);
     }
     public function interviewsForPeople($id) {
         $interviews =  Interview::select("Interviews.*", "Users.Name as CreatedByName","Specialists.Name as SpecialistName")
