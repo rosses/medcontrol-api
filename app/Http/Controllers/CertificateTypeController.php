@@ -164,6 +164,7 @@ class CertificateTypeController extends Controller
                         $fp = str_replace("{{txt_examenes}}",$txt_examenes,$fp); 
                         $fp = str_replace("{{txt_medicos}}",$txt_medicos,$fp);  
                         $fp = str_replace("{{fecha_es}}",strftime('%A %e de %B de %Y', time()),$fp); 
+                        $fp = str_replace("{{html}}","",$fp); 
                     }
 
                     $rows[$idx]["templateHtml"] = $fp;
