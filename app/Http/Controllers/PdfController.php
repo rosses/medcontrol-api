@@ -767,7 +767,7 @@ class PdfController extends Controller {
         ->first();
 
                 
-        if ($cert->CertificateID > 56) {
+        if ($cert->CertificateID > 1) {
             $fp = $cert->Description;
         } else {
             $path = dirname(__FILE__)."/../../../resources/views/".$cert["Template"];
