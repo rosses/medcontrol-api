@@ -139,7 +139,7 @@ class PdfController extends Controller {
                                 </td>
                         
                                 <td class="width-160" style="text-align:right;">
-                                    <img src="logosalinas.png" width="180" />
+                                    <img src="https://medcontrol-api-cwnjx.ondigitalocean.app/logosalinas.png" width="180" />
                                 </td>
                             </tr>
                         </table>
@@ -147,7 +147,7 @@ class PdfController extends Controller {
                     </page_header>
                     <page_footer>
                         <div style="text-align:right;">
-                            <img src="firmasalinas.png" width="180" />
+                            <img src="https://medcontrol-api-cwnjx.ondigitalocean.app/firmasalinas.png" width="180" />
                         </div>
                         <div style="text-align:left; font-size:11px;">
                             Fecha, {{fecha}}<br />
@@ -300,7 +300,7 @@ class PdfController extends Controller {
                                 </td>
                         
                                 <td class="width-160" style="text-align:right;">
-                                    <img src="logosalinas.png" width="180" />
+                                    <img src="https://medcontrol-api-cwnjx.ondigitalocean.app/logosalinas.png" width="180" />
                                 </td>
                             </tr>
                         </table>
@@ -308,7 +308,7 @@ class PdfController extends Controller {
                     </page_header>
                     <page_footer>
                         <div style="text-align:right;">
-                            <img src="firmasalinas.png" width="180" />
+                            <img src="https://medcontrol-api-cwnjx.ondigitalocean.app/firmasalinas.png" width="180" />
                         </div>
                         <div style="text-align:left; font-size:11px;">
                             Fecha, {{fecha}}<br />
@@ -740,11 +740,16 @@ class PdfController extends Controller {
         ->where("Certificates.CertificateID",$id)
         ->first();
 
-        $path = dirname(__FILE__)."/../../../resources/views/".$cert["Template"];
-        if (!file_exists($path)) {
-            throw new \Exception("not found template ".$path);
+                
+        if ($cert->CertificateID > 56) {
+            $fp = $cert->Description;
+        } else {
+            $path = dirname(__FILE__)."/../../../resources/views/".$cert["Template"];
+            if (!file_exists($path)) {
+                throw new \Exception("not found template ".$path);
+            }
+            $fp = file_get_contents($path);            
         }
-        $fp = file_get_contents($path);
         $dc = "";
         if ($cert->DateAsSurgery) {
             try {
