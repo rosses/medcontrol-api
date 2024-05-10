@@ -399,16 +399,42 @@ class PdfController extends Controller {
             "Surgerys.Name as SurgeryName",
             "Diagnosis.Name as DiagnosisName"
           )
-            ->join("Surgerys","Surgerys.SurgeryID","=","Dates.SurgeryID")
+            ->leftJoin("Surgerys","Surgerys.SurgeryID","=","Dates.SurgeryID")
             ->leftJoin("Diagnosis","Diagnosis.DiagnosisID","=","Dates.DiagnosisID")
             ->where("Dates.PeopleID", $id)
-            ->where("Dates.SurgeryID",">",0)
+            //->where("Dates.SurgeryID",">",0)
             ->orderBy("Dates.DateID","DESC")
             ->get();
         /*
             <tr><td class="width-120"><b>Temp. (C&deg;):</b></td><td>'.number_format($ant->Temperature,1,",",".").'</td></tr>
             <tr><td class="width-120"><b>Presión:</b></td><td>'.number_format($ant->Sistolic,1,",",".").' / '.number_format($ant->Diastolic,1,",",".").'</td></tr>
         */
+        $cirugia = "";
+        if (count($surgerys) > 0) {
+            foreach ($surgerys as $sg) {
+                if ($sg->SurgeryID > 0) {
+                    $txt_examenes = "";
+                    foreach ($results as $type=>$d) {
+                        $txt_examenes .= '<tr><td colspan="2">'.mb_strtoupper($type,'utf-8').'</td></tr>';
+                        foreach ($d as $field=>$val) {
+                            $txt_examenes .= '<tr><td class="width-200">'.$field.'</td><td class="width-200">'.$val.'</td></tr>';
+                        }
+                    } 
+            
+                    $txt_medicos = ""; 
+                    $inv = Interview::select("Interviews.*","Specialists.Name as SpecialistName")
+                            ->leftJoin("Specialists","Specialists.SpecialistID","=","Interviews.SpecialistID")
+                            ->where("DateID",$sg->DateID)
+                            ->get();
+            
+                    foreach ($inv as $idoc) {
+                        $txt_medicos .= '<tr><td class="width-200">'.$idoc->SpecialistName.'</td><td class="width-200">'.$idoc->Description.'</td></tr>';
+                    }
+                    $cirugia = "<h4>".$sg->SurgeryName."</h4>".$txt_examenes."<br>".$txt_medicos;
+
+                }
+            }
+        }
         $content= '
         <table width="100%">
           <tr>
@@ -435,11 +461,11 @@ class PdfController extends Controller {
             <tr><td class="width-120"><b>Peso (kg):</b></td><td>'.($ant ? number_format($ant->Weight,1,",",".") : '').'</td></tr>
             <tr><td class="width-120"><b>Altura (cm):</b></td><td>'.($ant ? number_format($ant->Height,0,",",".").'</td></tr>
             <tr><td class="width-120"><b>IMC:</b></td><td>'.number_format($imc,1,",",".") : '').'</td></tr>
-            <tr><td class="width-120"><b>Médicos:</b></td><td>'.($ant ? $ant->AntMedical : '').'</td></tr>
-            <tr><td class="width-120"><b>Fármacos:</b></td><td>'.($ant ? $ant->AntDrugs : '').'</td></tr>
-            <tr><td class="width-120"><b>Quirúrgicos:</b></td><td>'.($ant ? $ant->AntSurgical : '').'</td></tr>
-            <tr><td class="width-120"><b>Alergias:</b></td><td>'.($ant ? $ant->AntAllergy : '').'</td></tr>
-            <tr><td class="width-120"><b>Hábitos:</b></td><td>'.($ant ? $ant->AntHabits : '').'</td></tr>
+            <tr><td class="width-120"><b>Médicos:</b></td><td>'.(count($surgerys) > 0 ? $surgerys[0]->AntMedical : '').'</td></tr>
+            <tr><td class="width-120"><b>Fármacos:</b></td><td>'.(count($surgerys) > 0 ? $surgerys[0]->AntDrugs : '').'</td></tr>
+            <tr><td class="width-120"><b>Quirúrgicos:</b></td><td>'.(count($surgerys) > 0 ? $surgerys[0]->AntSurgical : '').'</td></tr>
+            <tr><td class="width-120"><b>Alergias:</b></td><td>'.(count($surgerys) > 0 ? $surgerys[0]->AntAllergy : '').'</td></tr>
+            <tr><td class="width-120"><b>Hábitos:</b></td><td>'.(count($surgerys) > 0 ? $surgerys[0]->AntHabits : '').'</td></tr>
             </table>
             </td>
           </tr>
@@ -460,7 +486,7 @@ class PdfController extends Controller {
             </td>
             <td class="width-330">
                 <h5>Cirug&iacute;a/Diagnóstico:</h5>
-                '.(count($surgerys) > 0 ? '' : 'No se ha iniciado el proceso de cirugia').'
+                '.(count($surgerys) > 0 ? '' : $cirugia).'
             </td>
           </tr>
         </table>
@@ -480,7 +506,7 @@ class PdfController extends Controller {
           </tr>
         </table><br /><br />';   
 
-        $path = dirname(__FILE__)."/../../../resources/views/generic.html";
+        $path = dirname(__FILE__)."/../../../resources/views/genericfull.html";
         if (!file_exists($path)) {
             throw new \Exception("not found template ".$path);
         }
