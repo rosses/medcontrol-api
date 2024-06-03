@@ -26,36 +26,49 @@ class PeopleController extends Controller
 {
     public function index(Request $request) {
 
-        $offset = ($request->has("page") && $request->get("page")>1 ? ( ($request->get("page") - 1) * 15) : 0);
-        $rows = People::select(
-            'Peoples.*',
-            'Groups.Name as GroupName',
-            'Healths.Name as HealthName',
-            'Status.Name as StatusName',
-            DB::raw("(SELECT TOP 1 CONVERT(varchar(10),X.Date,103) FROM Dates X WHERE X.PeopleID = Peoples.PeopleID ORDER BY [Date] DESC) as LastDate")
-        )
-        ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
-        ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
-        ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID');
+       
+        if (!isset($request->posop)) {
+            $offset = ($request->has("page") && $request->get("page")>1 ? ( ($request->get("page") - 1) * 15) : 0);
+            $rows = People::select(
+                'Peoples.*',
+                'Groups.Name as GroupName',
+                'Healths.Name as HealthName',
+                'Status.Name as StatusName',
+                DB::raw("(SELECT TOP 1 CONVERT(varchar(10),X.Date,103) FROM Dates X WHERE X.PeopleID = Peoples.PeopleID ORDER BY [Date] DESC) as LastDate")
+            )
+            ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
+            ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
+            ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID');
+    
+            if ($request->Search!="") {
+                $rows = $rows->where(function ($query) use ($request) {
+                    $query->where("Peoples.Name","like","%".$request->Search."%")
+                        ->orWhere("Peoples.Lastname","like","%".$request->Search."%")
+                        ->orWhereRaw("CONCAT(Peoples.Name, ' ', Peoples.Lastname) like '%".$request->Search."%'");
+                });
+            }
+            if ($request->StatusID!="") {
+                $rows = $rows->where("Peoples.StatusID", "=", $request->StatusID);
+            }
+            if ($request->HealthID!="") {
+                $rows = $rows->where("Peoples.HealthID", "=", $request->HealthID);
+            }
+            $rows = $rows->orderBy('Peoples.CreatedAt','DESC')->offset($offset)->limit(15);
+            $rows = $rows->get(); 
+        } else {
 
-        if ($request->Search!="") {
-            $rows = $rows->where(function ($query) use ($request) {
-                $query->where("Peoples.Name","like","%".$request->Search."%")
-                    ->orWhere("Peoples.Lastname","like","%".$request->Search."%")
-                    ->orWhereRaw("CONCAT(Peoples.Name, ' ', Peoples.Lastname) like '%".$request->Search."%'");
-            });
-        }
-        if ($request->StatusID!="") {
-            $rows = $rows->where("Peoples.StatusID", "=", $request->StatusID);
-        }
-        if ($request->HealthID!="") {
-            $rows = $rows->where("Peoples.HealthID", "=", $request->HealthID);
+            $rows = DB::select("SELECT P.*, H.Name HealthName, G.Name GroupName, S.Name StatusName  
+            FROM Peoples P 
+            INNER JOIN Groups G ON G.GroupID = P.GroupID 
+            LEFT JOIN Healths H ON H.HealthID = P.HealthID 
+            LEFT JOIN Status S ON S.StatusID = P.StatusID 
+            WHERE P.StatusID NOT IN (1,2) 
+            ORDER BY P.Name DESC
+            ");
+
+            
         }
         
-        $rows = $rows->orderBy('Peoples.CreatedAt','DESC')->offset($offset)->limit(15);
-        $rows = $rows->get(); 
-
-
         // Pagination data
         if ($request->Search!="" || $request->StatusID!="" || $request->HealthID!="")  {
             $total = People::select("*");
