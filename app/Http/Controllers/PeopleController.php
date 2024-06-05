@@ -57,7 +57,7 @@ class PeopleController extends Controller
             $rows = $rows->orderBy('Peoples.CreatedAt','DESC')->offset($offset)->limit(15);
             $rows = $rows->get(); 
         } else {
-
+            /*
             $rows = DB::select("SELECT P.*, H.Name HealthName, G.Name GroupName, S.Name StatusName  
             FROM Peoples P 
             INNER JOIN Groups G ON G.GroupID = P.GroupID 
@@ -66,8 +66,8 @@ class PeopleController extends Controller
             WHERE P.StatusID NOT IN (1,2) 
             ORDER BY P.Name DESC
             ");
-
-            
+            */
+            $rows = DB::select("SELECT * FROM PosopReport");
         }
         
         // Pagination data
@@ -255,10 +255,15 @@ class PeopleController extends Controller
     public function changeDates($id, Request $request) {
         try {
 
-
-            $p = People::find($id);
+            //$p = People::find($id);
+            $p = PeopleSurgery::find($request->PeopleSurgeryID);
+            /*
             if ($request->DateAsEvaluation) {
                 $p->DateAsEvaluation = $request->DateAsEvaluation;
+            }
+            */
+            if ($request->DateAsFinish) {
+                $p->DateAsEnter = $request->DateAsEnter;
             }
             if ($request->DateAsFinish) {
                 $p->DateAsFinish = $request->DateAsFinish;
@@ -281,7 +286,6 @@ class PeopleController extends Controller
     }
     public function changeDates2($id, Request $request) {
         try {
-            throw new \Exception("nooo");
             $p = PeopleSurgery::find($request->PeopleSurgeryID);
             if ($request->DatePost1) {
                 $p->DatePost1 = $request->DatePost1;
