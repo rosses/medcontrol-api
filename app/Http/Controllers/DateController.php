@@ -320,8 +320,7 @@ class DateController extends Controller
             }
 
             /* Surgery ? */
-            $date->PeopleSurgeryID = 0;
-            
+           
             if (isset($date->typeofdate) && $date->typeofdate == 'posop') {
                 $date->PeopleSurgeryID = (isset($request->PeopleSurgeryID) ? $request->PeopleSurgeryID : 0);
                 $date->save();
@@ -344,9 +343,15 @@ class DateController extends Controller
                 $date->save();
                 throw new \Exception("id is: " . print_r($date,1));
                 if ($date->PeopleSurgeryID && intval($date->PeopleSurgeryID) > 0) { // Updated
-                    
+                    $ps = PeopleSurgery::find($date->PeopleSurgeryID);
+                    $ps->UpdatedUserID = JWTAuth::user()->UserID;
+                    $ps->UpdatedAt = date("Y-m-d H:i:s");
+                    $ps->SurgeryID = $date->SurgeryID;
+                    $ps->DateID = $date->DateID;
+                    $ps->save();
+
                 } else { // New surgery
-                    /*
+                    
                     $ps = new PeopleSurgery();
                     $ps->PeopleID = $date->PeopleID;
                     $ps->DatePost1 = null;
@@ -370,11 +375,12 @@ class DateController extends Controller
                     $ps->save();
                     $date->PeopleSurgeryID = $ps->PeopleSurgeryID;
                     $date->save();
-                    */
+                    
                 }
                 
             }
             else {
+                $date->PeopleSurgeryID = 0;
                 $date->save();
             }
 
