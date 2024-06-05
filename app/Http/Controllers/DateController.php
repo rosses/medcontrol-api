@@ -12,6 +12,7 @@ use App\Models\Interview;
 use App\Models\Medicine;
 use App\Models\People;
 use App\Models\Order;
+use App\Models\PeopleSurgery;
 use App\Models\Recipe;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -161,20 +162,8 @@ class DateController extends Controller
             $date->AntAllergy = $request->AntAllergy;
             $date->AntSurgical = $request->AntSurgical;
             $date->AntHabits = $request->AntHabits;
-
-            if ($request->DiagnosisID == "99999999") {
-                $dd = new Diagnosis();
-                $dd->Name = (isset($request->DiagnosisNew) ? $request->DiagnosisNew : '');
-                $dd->Active=1;
-                $dd->Orden=0;
-                $dd->save();
-                $DiagnosisID = $dd->DiagnosisID;
-            } else {
-                $DiagnosisID = $request->DiagnosisID;
-            }
-            $date->DiagnosisID = $DiagnosisID;
-            $date->SurgeryID = $request->SurgeryID;
             $date->Obs = $request->Obs;
+            $date->typeofdate = (isset($request->typeofdate) ? $request->typeofdate : '');
             $date->UpdatedUserID = JWTAuth::user()->UserID;
             $date->UpdatedAt = date("Y-m-d H:i:s");
             
@@ -330,7 +319,64 @@ class DateController extends Controller
                 //$date->save();
             }
 
-            $date->save();
+            /* Surgery ? */
+            $date->PeopleSurgeryID = 0;
+            
+            if (isset($date->typeofdate) && $date->typeofdate == 'posop') {
+                $date->PeopleSurgeryID = (isset($request->PeopleSurgeryID) ? $request->PeopleSurgeryID : 0);
+                $date->save();
+            }
+            else if (isset($date->typeofdate) && $date->typeofdate == 'diagnosis') {
+
+                // Save diagnosis data.
+                if ($request->DiagnosisID == "99999999") {
+                    $dd = new Diagnosis();
+                    $dd->Name = (isset($request->DiagnosisNew) ? $request->DiagnosisNew : '');
+                    $dd->Active=1;
+                    $dd->Orden=0;
+                    $dd->save();
+                    $DiagnosisID = $dd->DiagnosisID;
+                } else {
+                    $DiagnosisID = $request->DiagnosisID;
+                }
+                $date->DiagnosisID = $DiagnosisID;
+                $date->SurgeryID = $request->SurgeryID;
+                $date->save();
+                throw new \Exception("id is: " . print_r($date,1));
+                if ($date->PeopleSurgeryID && intval($date->PeopleSurgeryID) > 0) { // Updated
+                    
+                } else { // New surgery
+                    /*
+                    $ps = new PeopleSurgery();
+                    $ps->PeopleID = $date->PeopleID;
+                    $ps->DatePost1 = null;
+                    $ps->DatePost2 = null;
+                    $ps->DatePost3 = null;
+                    $ps->DatePost4 = null;
+                    $ps->DatePost5 = null;
+                    $ps->DatePost6 = null;
+                    $ps->DateMsg1 = "";
+                    $ps->DateMsg2 = "";
+                    $ps->DateMsg3 = "";
+                    $ps->DateMsg4 = "";
+                    $ps->DateMsg5 = "";
+                    $ps->DateMsg6 = "";
+                    $ps->CreatedUserID = JWTAuth::user()->UserID;
+                    $ps->CreatedAt = date("Y-m-d H:i:s");
+                    $ps->UpdatedUserID = JWTAuth::user()->UserID;
+                    $ps->UpdatedAt = date("Y-m-d H:i:s");
+                    $ps->SurgeryID = $date->SurgeryID;
+                    $ps->DateID = $date->DateID;
+                    $ps->save();
+                    $date->PeopleSurgeryID = $ps->PeopleSurgeryID;
+                    $date->save();
+                    */
+                }
+                
+            }
+            else {
+                $date->save();
+            }
 
             return response()->json([
                 "success" => true,

@@ -17,6 +17,7 @@ use App\Models\Recipe;
 use App\Models\Surgery;
 use App\Models\GroupSingle;
 use App\Models\PeopleDate;
+use App\Models\PeopleSurgery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; 
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -371,6 +372,7 @@ class PeopleController extends Controller
         $people = json_decode(json_encode(($rows)),true);
         $people["Anthropometry"] = Anthropometry::where("PeopleID", $id)->orderBy("AnthropometryID","DESC")->first();
         $people["Date"] = Date::where("PeopleID", $id)->orderBy("DateID","DESC")->first();
+        /*
         $people["Surgerys"] = Date::select(
                                 "Dates.*",
                                 "Surgerys.Name as SurgeryName",
@@ -382,7 +384,9 @@ class PeopleController extends Controller
                                 ->where("Dates.SurgeryID",">",0)
                                 ->orderBy("Dates.DateID","DESC")
                                 ->get();
-
+        */
+        $people["Surgerys"] = PeopleSurgery::select("*")->where("PeopleSurgerys.PeopleID", $id)->get();
+        
         $people["RequestedOrders"] = Order::select(
                                         "Exams.Name as ExamName",
                                         "ExamTypes.Name as ExamTypeName",
