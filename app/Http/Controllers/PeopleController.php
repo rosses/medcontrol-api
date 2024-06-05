@@ -281,14 +281,8 @@ class PeopleController extends Controller
     }
     public function changeDates2($id, Request $request) {
         try {
-
-
-            $refPeople = People::find($id); // too have $request->PeopleID
-            $p = PeopleDate::where("PeopleID",$id);
-            if (!$p) {
-                $p = new PeopleDate();
-                $p->PeopleID = $id;
-            }
+            throw new \Exception("nooo");
+            $p = PeopleSurgery::find($request->PeopleSurgeryID);
             if ($request->DatePost1) {
                 $p->DatePost1 = $request->DatePost1;
             }
@@ -327,6 +321,8 @@ class PeopleController extends Controller
                 $p->DateMsg6 = $request->DateMsg6;
             }
 
+            $p->UpdatedUserID = JWTAuth::user()->UserID;
+            $p->UpdatedAt = date("Y-m-d H:i:s");
             $p->save();
 
             return response()->json([
@@ -386,7 +382,7 @@ class PeopleController extends Controller
                                 ->get();
         */
         $people["Surgerys"] = PeopleSurgery::select("*")->where("PeopleSurgerys.PeopleID", $id)->get();
-        
+
         $people["RequestedOrders"] = Order::select(
                                         "Exams.Name as ExamName",
                                         "ExamTypes.Name as ExamTypeName",
