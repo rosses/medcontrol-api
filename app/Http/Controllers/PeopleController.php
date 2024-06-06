@@ -67,7 +67,12 @@ class PeopleController extends Controller
             ORDER BY P.Name DESC
             ");
             */
-            $rows = DB::select("SELECT * FROM PosopReport");
+            $conditions = [];
+            if (isset($request->Name)) {
+                $conditions[] = " Nombre like '%".$request->Name."%' ";
+            }
+            $conditions = implode(" AND ", $conditions);
+            $rows = DB::select("SELECT * FROM PosopReport WHERE ".$conditions. " 1 = 1");
         }
         
         // Pagination data

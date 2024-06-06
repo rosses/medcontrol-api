@@ -341,7 +341,7 @@ class DateController extends Controller
                 $date->DiagnosisID = $DiagnosisID;
                 $date->SurgeryID = $request->SurgeryID;
                 $date->save();
-                throw new \Exception("id is: " . print_r($date,1));
+                //throw new \Exception("id is: " . print_r($date,1));
                 if ($date->PeopleSurgeryID && intval($date->PeopleSurgeryID) > 0) { // Updated
                     $ps = PeopleSurgery::find($date->PeopleSurgeryID);
                     $ps->UpdatedUserID = JWTAuth::user()->UserID;
