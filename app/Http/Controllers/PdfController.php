@@ -340,6 +340,120 @@ class PdfController extends Controller {
         die();
 
     } 
+    public function getFichaDate($id) {
+
+        $date = Date::find($id);
+        $people = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')
+                ->join('Groups','Groups.GroupID','=','Peoples.GroupID')
+                ->leftJoin('Healths','Healths.HealthID','=','Peoples.HealthID')
+                ->leftJoin('Status', 'Status.StatusID','=','Peoples.StatusID')
+                ->where("PeopleID", $date->PeopleID);    
+        
+        $people = $people->first();
+        $pdfname = $people->Name." ".$people->Lastname;
+        $ant = Anthropometry::where("PeopleID", $id)->orderBy("AnthropometryID","DESC")->first();
+        $evolutions =  Evolution::select("Evolutions.*", "Users.Name as CreatedByName")
+                            ->join("Users","Users.UserID","=","Evolutions.CreatedUserID")
+                            ->where("Evolutions.PeopleID", $id)
+                            ->get();
+
+        if ($people->Birthday=="") {
+            $people->Birthday = date("Y-m-d H:i:s");
+        }
+        $fecha_nac = new \DateTime(date('Y/m/d',strtotime($people->Birthday))); 
+        $fecha_hoy =  new \DateTime(date('Y/m/d',time())); 
+        $edad = date_diff($fecha_hoy,$fecha_nac); 
+        $imc = 0;
+
+        $edv = DB::select("
+        SELECT		E.ExamID,  ET.Name ExamTypeName, E.Name, ED.ExamDataType, ED.Name ExamDataName, EDV.Value 
+        FROM		Exams as E 
+        INNER JOIN	ExamTypes ET ON ET.ExamTypeID = E.ExamTypeID
+        INNER JOIN	ExamDatas ED ON ED.ExamID = E.ExamID 
+        INNER JOIN	ExamDataValues EDV ON EDV.ExamDataID = ED.ExamDataID 
+        INNER JOIN  Orders O ON O.PeopleID = '".$people->PeopleID."' AND O.DateID = '".$id."' AND O.OrderID = EDV.OrderID 
+        WHERE		E.Active = 1 
+        ORDER BY	ET.Name ASC, EDV.ExamDataValueID DESC
+        ");
+        $edv = json_decode(json_encode($edv), true);
+        $results = [];
+        foreach ($edv as $rr) {
+            if (!isset($results[$rr["ExamTypeName"]][$rr["ExamDataName"]])) { // Only newest result
+                if ($rr["ExamDataType"]=="boolean") {
+                    if ($rr["Value"]=="1") {
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "OK";
+                    }
+                    else {
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "NO-OK";
+                    }
+                }
+                else if ($rr["ExamDataType"]=="text") { 
+                    $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = $rr["Value"];
+                } 
+                else if ($rr["ExamDataType"]=="number") { 
+                    $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = round($rr["Value"],2);
+                }
+            }
+        }
+
+
+
+        $content= '
+        <table width="100%">
+          <tr>
+            <td class="width-330">
+                <h5>Información</h5>
+                <table width="100%" valign="top">
+                <tr><td class="width-120"><b>Nombre:</b></td><td>'.ucwords(mb_strtolower($people->Name.' '.$people->Lastname,"utf-8")).'</td></tr>
+                <tr><td class="width-120"><b>RUT:</b></td><td>'.$people->CardCode.'</td></tr>
+                <tr><td class="width-120"><b>Edad:</b></td><td>'.$edad->format('%Y').' años y '.$edad->format('%m').' meses y '.$edad->format('%m').' días</td></tr>
+                </table> 
+            </td>
+            <td class="width-80"></td>
+            <td class="width-330" valign="top">
+            <h5>Fecha: </h5> 
+            <h4>'.implode("-",array_reverse(explode("-",$date->Date))).'</h4>
+            </td>
+          </tr>
+        </table>
+  
+        <table width="100%">
+          <tr>
+            <td class="width-250" valign="top">
+            ';
+            $i=0;
+            foreach ($results as $type=>$d) {
+                $content .= "<h4>".$type."</h4>";
+                foreach ($d as $field=>$val) {
+                    $content .= "<b>".$field.":</b> ".$val."<br>";
+                }
+                $i++;
+                if ($i%4==0) {
+                    $content.="</td><td class='width-250' valign='top'>";
+                }
+            }
+            $content .= '
+            </td>
+          </tr>
+        </table><br /><br />';   
+
+        $path = dirname(__FILE__)."/../../../resources/views/genericfull.html";
+        if (!file_exists($path)) {
+            throw new \Exception("not found template ".$path);
+        }
+        $fp = file_get_contents($path);
+        $fp = str_replace("{{html}}",$content,$fp);
+        $fp = str_replace("{{fecha}}",date("d/m/Y"),$fp);
+
+        //210x279
+        $html2pdf = new Html2Pdf('P', 'A4', 'es', true, 'UTF-8', 5);
+        $html2pdf->pdf->SetDisplayMode('fullpage');
+        $html2pdf->setDefaultFont('Arial');
+        $html2pdf->pdf->setTitle("pdf ".$pdfname.".pdf");
+        $html2pdf->writeHTML($fp); 
+        $html2pdf->output("pdf ".$pdfname.".pdf");
+        die();
+    }
     public function getPeople($id) {
         $people = People::select('Peoples.*','Groups.Name as GroupName','Healths.Name as HealthName','Status.Name as StatusName')
                 ->join('Groups','Groups.GroupID','=','Peoples.GroupID')

@@ -268,6 +268,8 @@ Route::group([
         Route::get('people/{id}', 'PdfController@getPeople');
         Route::get('single-recipes/{id}', 'PdfController@getSingleRecipe');
         Route::get('data-single-orders/{id}', 'PdfController@getSingleOrder');
+        Route::get('exams-sheet/group/{id}', 'PdfController@getFichaGroup');
+        Route::get('exams-sheet/date/{id}', 'PdfController@getFichaDate');
     });
 
     Route::get('master','AuthController@master');

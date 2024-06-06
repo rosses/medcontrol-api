@@ -68,11 +68,68 @@ class PeopleController extends Controller
             ");
             */
             $conditions = [];
-            if (isset($request->Name)) {
-                $conditions[] = " Nombre like '%".$request->Name."%' ";
+            if (isset($request->Name) && $request->Name != "") {
+                $name = str_replace(" ","%",$request->Name);
+                $conditions[] = " Nombre LIKE '%".$name."%' ";
             }
+            if (isset($request->CardCode) && $request->CardCode!="") {
+                $conditions[] = " RUT LIKE '%".$request->CardCode."%' ";
+            }
+            if (isset($request->Status) && $request->Status!="") {
+                $conditions[] = " Estado LIKE '%".$request->Status."%' ";
+            }
+            if (isset($request->Health) && $request->Health!="") {
+                $conditions[] = " Prevision LIKE '%".$request->Health."%' ";
+            }
+            if (isset($request->Surgery) && $request->Surgery!="") {
+                $conditions[] = " Cirugia LIKE '%".$request->Surgery."%' ";
+            }
+            if (isset($request->FechaIngreso) && $request->FechaIngreso!="") {
+                $conditions[] = " FechaIngreso = '".$request->FechaIngreso." 00:00:00' ";
+            }
+            if (isset($request->FechaTermino) && $request->FechaTermino!="") {
+                $conditions[] = " FechaTermino = '".$request->FechaTermino." 00:00:00' ";
+            }
+            if (isset($request->FechaCirugia) && $request->CardCode!="") {
+                $conditions[] = " FechaCirugia = '".$request->FechaCirugia." 00:00:00' ";
+            }
+            if (isset($request->IMC) && $request->IMC!="") {
+                $conditions[] = " IMC LIKE '%".$request->IMC."%' ";
+            }
+            if (isset($request->NutriologoName) && $request->NutriologoName!="") {
+                $conditions[] = " Nutriologo LIKE '%".$request->NutriologoName."%' ";
+            }
+            if (isset($request->PsicologoName) && $request->PsicologoName!="") {
+                $conditions[] = " Psicologo LIKE '%".$request->PsicologoName."%' ";
+            }
+            if (isset($request->NutricionistaName) && $request->NutricionistaName!="") {
+                $conditions[] = " Nutricionista LIKE '%".$request->NutricionistaName."%' ";
+            }
+            if (isset($request->PsiquiatraName) && $request->PsiquiatraName!="") {
+                $conditions[] = " Psiquiatra LIKE '%".$request->PsiquiatraName."%' ";
+            }
+            if (isset($request->CheckLab) && $request->CheckLab!="") {
+                $conditions[] = " Lab = '".$request->CheckEDA."' ";
+            }
+            if (isset($request->CheckRxTx) && $request->CheckRxTx!="") {
+                $conditions[] = " RxTx = '".$request->CheckEDA."' ";
+            }
+            if (isset($request->CheckECO) && $request->CheckECO!="") {
+                $conditions[] = " Eco = '".$request->CheckEDA."' ";
+            }
+            if (isset($request->CheckECG) && $request->CheckECG!="") {
+                $conditions[] = " ECG = '".$request->CheckEDA."' ";
+            }
+            if (isset($request->CheckECO2) && $request->CheckECO2!="") {
+                $conditions[] = " Eco2 = '".$request->CheckEDA."' ";
+            }
+            if (isset($request->CheckEDA) && $request->CheckEDA!="") {
+                $conditions[] = " Eda = '".$request->CheckEDA."' ";
+            }
+
+            if (count($conditions)==0) { $conditions[] = "1 = 1"; }
             $conditions = implode(" AND ", $conditions);
-            $rows = DB::select("SELECT * FROM PosopReport WHERE ".$conditions. " 1 = 1");
+            $rows = DB::select("SELECT * FROM PosopReport WHERE ".$conditions);
         }
         
         // Pagination data
@@ -494,6 +551,7 @@ class PeopleController extends Controller
                 "Date" => $pack->Date,
                 "Time" => $pack->Time,
                 "OrderType" => $pack->OrderType,
+                "typeofdate" => '',
                 "data" => $rows,
             ];
         } 
@@ -504,11 +562,14 @@ class PeopleController extends Controller
                         'Dates.Date as Date',
                         'Dates.Time as Time',
                         DB::raw('\'DT\' as OrderType'),
+                        'Dates.typeofdate as typeofdate',
+                        'Surgerys.Name as SurgeryName'
                     )
                     ->leftJoin('Dates', 'Dates.DateID', '=', 'Orders.DateID')
+                    ->leftJoin('Surgerys', 'Surgerys.SurgeryID', '=', 'Dates.SurgeryID')
                     ->where("Orders.PeopleID",$id)
                     ->where("Orders.DateID",">","0")
-                    ->groupBy("Orders.DateID","Dates.Date","Dates.Time")
+                    ->groupBy("Orders.DateID","Dates.Date","Dates.Time","Dates.typeofdate","Surgerys.Name")
                     ->orderBy("Orders.DateID","DESC")
                     ->get();
         foreach ($packs as $pack) {
@@ -556,6 +617,8 @@ class PeopleController extends Controller
                 "Date" => $pack->Date,
                 "Time" => $pack->Time,
                 "OrderType" => $pack->OrderType,
+                "typeofdate"=>$pack->typeofdate,
+                'SurgeryName'=>$pack->SurgeryName,
                 "data" => $rows
             ];
         } 
