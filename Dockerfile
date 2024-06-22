@@ -103,7 +103,7 @@ USER ${USERNAME}
 
 # copy source files and config file
 COPY --chown=${USERNAME}:${USERNAME} . $APP_HOME/
-#COPY --chown=${USERNAME}:${USERNAME} .env.$ENV $APP_HOME/.env
+COPY --chown=${USERNAME}:${USERNAME} .env $APP_HOME/.env
 
 # install all PHP dependencies
 RUN if [ "$BUILD_ARGUMENT_ENV" = "dev" ] || [ "$BUILD_ARGUMENT_ENV" = "test" ]; then COMPOSER_MEMORY_LIMIT=-1 composer install --optimize-autoloader --no-interaction --no-progress; \
