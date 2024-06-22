@@ -67,7 +67,10 @@ RUN mkdir -p $APP_HOME/public && \
 
 # put apache and php config for Laravel, enable sites
 COPY ./docker/general/laravel.conf /etc/apache2/sites-available/laravel.conf
+COPY ./docker/general/laravel-ssl.conf /etc/apache2/sites-available/laravel-ssl.conf
+COPY ./docker/certs /usr/local/apache2/conf/certs
 RUN a2ensite laravel.conf 
+RUN a2ensite laravel-ssl.conf 
 COPY ./docker/$BUILD_ARGUMENT_ENV/php.ini /usr/local/etc/php/php.ini
 
 # enable apache modules
