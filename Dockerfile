@@ -29,6 +29,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
       sudo \
       wget \ 
       libzip-dev \
+      mod_ssl \ 
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-configure intl \
     && docker-php-ext-install \
