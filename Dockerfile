@@ -29,7 +29,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
       sudo \
       wget \ 
       libzip-dev \
-      mod_ssl \ 
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-configure intl \
     && docker-php-ext-install \
@@ -75,6 +74,7 @@ RUN a2ensite laravel-ssl.conf
 COPY ./docker/$BUILD_ARGUMENT_ENV/php.ini /usr/local/etc/php/php.ini
 
 # enable apache modules
+RUN a2enmod ssl
 RUN a2enmod rewrite
 
 # install Xdebug in case dev/test environment
@@ -112,3 +112,6 @@ RUN if [ "$BUILD_ARGUMENT_ENV" = "dev" ] || [ "$BUILD_ARGUMENT_ENV" = "test" ]; 
     fi
 
 USER root
+
+EXPOSE 80
+EXPOSE 443
