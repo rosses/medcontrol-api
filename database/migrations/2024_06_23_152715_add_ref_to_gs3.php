@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class Addlrper extends Migration
+class AddRefToGs3 extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class Addlrper extends Migration
      */
     public function up()
     {
-        Schema::table('GroupSingles', function (Blueprint $table) {
-            $table->integer('RefID')->default(0);
+        Schema::table('Orders', function (Blueprint $table) {
+            $table->string('Comments')->default('');
         });
     }
 
@@ -25,8 +25,8 @@ class Addlrper extends Migration
      */
     public function down()
     {
-        Schema::table('GroupSingles', function (Blueprint $table) {
-            $table->dropColumn('RefID');
+        Schema::table('Orders', function (Blueprint $table) {
+            $table->dropColumn('Comments');
         });
     }
 }

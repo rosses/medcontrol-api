@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class Addlrper extends Migration
+class AddRefToGs extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class Addlrper extends Migration
      */
     public function up()
     {
-        Schema::table('GroupSingles', function (Blueprint $table) {
-            $table->integer('RefID')->default(0);
+        Schema::table('gs', function (Blueprint $table) {
+            // No use, fade pls
         });
     }
 
@@ -25,8 +25,8 @@ class Addlrper extends Migration
      */
     public function down()
     {
-        Schema::table('GroupSingles', function (Blueprint $table) {
-            $table->dropColumn('RefID');
+        Schema::table('gs', function (Blueprint $table) {
+            // No use, fade pls
         });
     }
 }
