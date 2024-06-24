@@ -506,6 +506,7 @@ class PeopleController extends Controller
                     ->join("Orders","Orders.GroupSingleID","=","GroupSingles.GroupSingleID")
                     ->where("Orders.PeopleID",$id)
                     ->where("GroupSingles.Type","=","order")
+                    ->groupBy("GroupSingles.GroupSingleID", "GroupSingles.CreatedAt")
                     ->orderBy("GroupSingles.CreatedAt","DESC")
                     ->get();
         foreach ($packs as $pack) {
@@ -622,7 +623,6 @@ class PeopleController extends Controller
                 "data" => $rows
             ];
         } 
-
 
         return response()->json($output);
     }

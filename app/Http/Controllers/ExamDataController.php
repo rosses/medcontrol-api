@@ -10,7 +10,8 @@ use Illuminate\Http\Request;
 class ExamDataController extends Controller
 {
     public function index() {
-        $rows = ExamData::select('ExamDatas.*','Exams.Name as ExamName','Exams.ExamTypeID','ExamTypes.Name as ExamTypeName')
+        $rows = ExamData::select('ExamDatas.*','Exams.Name as ExamName','Exams.ExamTypeID','ExamTypes.Name as ExamTypeName',
+                                'ExamTypes.Side','ExamTypes.SideOrder','Exams.Orden as ExamOrden')
                 ->join('Exams', 'ExamDatas.ExamID', '=', 'Exams.ExamID')
                 ->join('ExamTypes', 'ExamTypes.ExamTypeID', '=', 'Exams.ExamTypeID')
                 ->where('ExamDatas.Active',1)
@@ -25,6 +26,7 @@ class ExamDataController extends Controller
     }
     public function saveResults(Request $request) {
         try {
+            
             if (isset($request->DateID) && $request->DateID!="" && intval($request->DateID) > 0) {
                 if ($request->data && is_array($request->data)) {
                     foreach ($request->data as $d) {
@@ -75,6 +77,7 @@ class ExamDataController extends Controller
                     }
                 }
             }
+            
             return response()->json([
                 "success" => true
             ], 200);
