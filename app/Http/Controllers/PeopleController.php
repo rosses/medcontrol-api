@@ -868,32 +868,29 @@ class PeopleController extends Controller
             $edv = json_decode(json_encode($edv), true);
             $results = [];
             foreach ($edv as $rr) {
-                if (!isset($results[$rr["ExamTypeName"]][$rr["ExamDataName"]])) { // Only newest result
-                    if ($rr["ExamDataType"]=="boolean") {
-                        if ($rr["Value"]=="1") {
-                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "OK";
-                        }
-                        else {
-                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "NO-OK";
-                        }
+                if (!isset($results[$rr["ExamTypeName"]])) {
+                    $results[$rr["ExamTypeName"]] = [];
+                }
+                //if (!isset($results[$rr["ExamTypeName"]][$rr["ExamDataName"]])) { // Only newest result
+                if ($rr["ExamDataType"]=="boolean") {
+                    if ($rr["Value"]=="1") {
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "OK";
                     }
-                    else if ($rr["ExamDataType"]=="text") { 
-                        if (isset($results[$rr["ExamTypeName"]][$rr["ExamDataName"]]) && $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] != "") {
-                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = $rr["Value"];
-                        } 
-                        else {
-                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = $rr["Value"];
-                        }
-                    } 
-                    else if ($rr["ExamDataType"]=="number") { 
-                        if (isset($results[$rr["ExamTypeName"]][$rr["ExamDataName"]]) && $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] != "") {
-                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = round($rr["Value"],2);
-                        }
-                        else {
-                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = round($rr["Value"],2);
-                        }
+                    else {
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = "NO-OK";
                     }
                 }
+                else if ($rr["ExamDataType"]=="text" || $rr["ExamDataType"]=="textarea") { 
+                    if ($rr["Value"] != "") {
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = $rr["Value"];
+                    } 
+                } 
+                else if ($rr["ExamDataType"]=="number") { 
+                    if (round($rr["Value"],2) > 0) {
+                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = round($rr["Value"],2);
+                    }
+                }
+                //}
             }
             
             
@@ -938,7 +935,8 @@ class PeopleController extends Controller
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                "message" => $e->getMessage()
+                "message" => $e->getMessage(),
+                "trace" => $e->getTrace()
             ], 400);
         }  
     }
