@@ -878,10 +878,20 @@ class PeopleController extends Controller
                         }
                     }
                     else if ($rr["ExamDataType"]=="text") { 
-                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = $rr["Value"];
+                        if (isset($results[$rr["ExamTypeName"]][$rr["ExamDataName"]]) && $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] != "") {
+                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = $rr["Value"];
+                        } 
+                        else {
+                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = $rr["Value"];
+                        }
                     } 
                     else if ($rr["ExamDataType"]=="number") { 
-                        $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = round($rr["Value"],2);
+                        if (isset($results[$rr["ExamTypeName"]][$rr["ExamDataName"]]) && $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] != "") {
+                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = round($rr["Value"],2);
+                        }
+                        else {
+                            $results[$rr["ExamTypeName"]][$rr["ExamDataName"]] = round($rr["Value"],2);
+                        }
                     }
                 }
             }
