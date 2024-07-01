@@ -863,8 +863,9 @@ class PeopleController extends Controller
             INNER JOIN	ExamDataValues EDV ON EDV.ExamDataID = ED.ExamDataID 
             INNER JOIN  Orders O ON O.PeopleID = '".$id."' AND O.OrderID = EDV.OrderID 
             WHERE		E.Active = 1 
-            ORDER BY	ET.Name ASC, EDV.ExamDataValueID DESC
+            ORDER BY    ET.Side ASC, ET.SideOrder ASC 
             ");
+            //ORDER BY	ET.Name ASC, EDV.ExamDataValueID DESC
             $edv = json_decode(json_encode($edv), true);
             $results = [];
             foreach ($edv as $rr) {
