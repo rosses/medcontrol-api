@@ -808,6 +808,8 @@ class PeopleController extends Controller
     }
     public function delete($id) {
         try {
+            $row = [];
+            /*
             $row = People::find($id);
             if ($row) {
                 $row->delete();
@@ -819,6 +821,7 @@ class PeopleController extends Controller
             Interview::where("PeopleID",$id)->delete();
             Order::where("PeopleID",$id)->delete();
             Recipe::where("PeopleID",$id)->delete();
+            */
 
             return response()->json($row, 200);
         } catch (\Exception $e) {
