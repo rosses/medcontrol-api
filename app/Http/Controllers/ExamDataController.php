@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\ExamData;
 use App\Models\Order;
 use App\Models\ExamDataValue;
+use App\Models\GroupSingle;
 use Exception;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
 class ExamDataController extends Controller
 {
     public function index() {
@@ -53,10 +56,11 @@ class ExamDataController extends Controller
                 }
             }
             else if (isset($request->SingleID) && $request->SingleID!="" && intval($request->SingleID) > 0) {
+                $single = GroupSingle::find($request->SingleID);
                 if ($request->data && is_array($request->data)) {
                     foreach ($request->data as $d) {
                         $edv = new ExamDataValue();
-                        if (isset($d["ExamDataValueID"]) && $d["ExamDataValueID"]!=0) {
+                        if (isset($d["ExamDataValueID"]) && $d["E84xamDataValueID"]!=0) {
                             $edv = ExamDataValue::find($d["ExamDataValueID"]);
                         }
                         $OrderID = 0;
@@ -73,6 +77,26 @@ class ExamDataController extends Controller
                                 $edv->Value = $d["Value"];                        
                                 $edv->save();
                             }
+                        }
+                        else if ($OrderID == 0) {
+                          if (isset($d["Value"])) {
+                            $od = new Order();
+                            $od->ExamID = $d["ExamID"];
+                            $od->PeopleID = $single->PeopleID;
+                            $od->DateID = 0;
+                            $od->CreatedUserID = JWTAuth::user()->UserID;
+                            $od->CreatedAt = date("Y-m-d H:i:s");
+                            $od->GroupSingleID = $request->SingleID;
+                            $od->Comments = "";
+                            $od->save();
+
+                            $edv->OrderID = $od->OrderID;
+                            $edv->DateID = 0;
+                            $edv->GroupSingleID = $request->SingleID;
+                            $edv->ExamDataID = $d["ExamDataID"];
+                            $edv->Value = $d["Value"];                        
+                            $edv->save();
+                          }
                         }
                     }
                 }
