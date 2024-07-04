@@ -43,9 +43,9 @@ class PeopleController extends Controller
     
             if ($request->Search!="") {
                 $rows = $rows->where(function ($query) use ($request) {
-                    $query->where("Peoples.Name","like","%".$request->Search."%")
-                        ->orWhere("Peoples.Lastname","like","%".$request->Search."%")
-                        ->orWhereRaw("CONCAT(Peoples.Name, ' ', Peoples.Lastname) like '%".$request->Search."%'");
+                    $query->whereRaw("Peoples.Name COLLATE Latin1_General_CI_AI LIKE '%".$request->Search."%'")
+                        ->orWhereRaw("Peoples.Lastname COLLATE Latin1_General_CI_AI LIKE '%".$request->Search."%'")
+                        ->orWhereRaw("CONCAT(Peoples.Name, ' ', Peoples.Lastname) LIKE '%".$request->Search."%'");
                 });
             }
             if ($request->StatusID!="") {
@@ -70,7 +70,7 @@ class PeopleController extends Controller
             $conditions = [];
             if (isset($request->Name) && $request->Name != "") {
                 $name = str_replace(" ","%",$request->Name);
-                $conditions[] = " Nombre LIKE '%".$name."%' ";
+                $conditions[] = " Nombre COLLATE Latin1_General_CI_AI LIKE '%".$name."%' ";
             }
             if (isset($request->CardCode) && $request->CardCode!="") {
                 $conditions[] = " RUT LIKE '%".$request->CardCode."%' ";
@@ -915,9 +915,19 @@ class PeopleController extends Controller
                 $surgery = $surgerys[0];
             }
         
-
+            try {
+                $weight = floatval($ant->Weight);
+                $height = floatval($ant->Height);
+                if ($weight == 0 || $height == 0) {
+                    throw new \Exception("Division Zero");
+                }
+                $m2 = ($height/100) * ($height/100);
+                $imc = round(($weight / $m2) * 100) / 100;
+            } catch (\Exception $e2) {
+                $imc = 0;
+            }
             $txt .= "\nANTROPOMETRIA\n"; 
-            $txt .= "Peso: ".number_format($ant->Weight,0,",",".")." Talla: ".number_format($ant->Height,0,",",".")."  IMC: ".$imc.""; //Temp. ".number_format($ant->Temperature,1,",",".")."
+            $txt .= "Peso: ".number_format($ant->Weight,0,",",".")." Talla: ".number_format($ant->Height,0,",",".")."  IMC: ".number_format($imc,1,",",".").""; //Temp. ".number_format($ant->Temperature,1,",",".")."
             $txt .= "\n\nANTECEDENTES\n";
             $txt .= "Ciudad donde Vive: ".$people->City."\n";
             $txt .= "Profesión: ".$people->Profession."\n";

@@ -55,8 +55,8 @@ class DateController extends Controller
             $anthropometry = new Anthropometry();
             $anthropometry->PeopleID = $date->PeopleID;
             $anthropometry->DateID = $date->DateID;
-            $anthropometry->Weight = $request->Weight;
-            $anthropometry->Height = $request->Height;
+            $anthropometry->Weight = str_replace(",",".",$request->Weight);
+            $anthropometry->Height = str_replace(",",".",$request->Height);
             $anthropometry->Temperature = $request->Temperature;
             $anthropometry->Sistolic = $request->Sistolic;
             $anthropometry->Diastolic = $request->Diastolic;
@@ -177,8 +177,8 @@ class DateController extends Controller
                     $ant->CreatedUserID = JWTAuth::user()->UserID;
                     $ant->CreatedAt = date("Y-m-d H:i:s");
                 }
-                $ant->Weight = $o["Weight"];
-                $ant->Height = $o["Height"];
+                $ant->Weight = str_replace(",",".",$o["Weight"]);
+                $ant->Height = str_replace(",",".",$o["Height"]);
                 $ant->Diastolic = $o["Diastolic"];
                 $ant->Temperature = $o["Temperature"];
                 $ant->Diastolic = $o["Diastolic"];
