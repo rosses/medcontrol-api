@@ -926,6 +926,8 @@ class PeopleController extends Controller
             } catch (\Exception $e2) {
                 $imc = 0;
             }
+            $ooo = "";
+
             $txt .= "\nANTROPOMETRIA\n"; 
             $txt .= "Peso: ".number_format($ant->Weight,0,",",".")." Talla: ".number_format($ant->Height,0,",",".")."  IMC: ".number_format($imc,1,",",".").""; //Temp. ".number_format($ant->Temperature,1,",",".")."
             $txt .= "\n\nANTECEDENTES\n";
@@ -940,9 +942,14 @@ class PeopleController extends Controller
             foreach ($results as $type=>$d) {
                 $txt .= "\n".mb_strtoupper($type,'utf-8')."\n";
                 foreach ($d as $field=>$val) {
-                    $txt .= "".$field.": ".$val."\n";
+                    if ($field=="Otros Hemograma") {
+                        $txt .= "".$field.": ".$val."\n";
+                        $ooo = $val;
+                    }
                 }
             } 
+
+            $txt .= "\n".$ooo."\n";
 
             return response()->json([
                 "text" => $txt
