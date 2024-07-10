@@ -32,6 +32,7 @@ class ExamDataController extends Controller
             
             if (isset($request->DateID) && $request->DateID!="" && intval($request->DateID) > 0) {
                 if ($request->data && is_array($request->data)) {
+                    $is36 = false;
                     foreach ($request->data as $d) {
                         $edv = new ExamDataValue();
                         if (isset($d["ExamDataValueID"]) && $d["ExamDataValueID"]!=0) {
@@ -49,6 +50,9 @@ class ExamDataController extends Controller
                                 $edv->GroupSingleID = 0;
                                 $edv->ExamDataID = $d["ExamDataID"];
                                 $edv->Value = $d["Value"];                        
+                                if ($d["ExamDataID"]=="36") {
+                                    $edv->Value = (isset($request->comments) ? $request->comments : "");
+                                }
                                 $edv->save();
                             }
                         }
@@ -94,7 +98,10 @@ class ExamDataController extends Controller
                             $edv->DateID = 0;
                             $edv->GroupSingleID = $request->SingleID;
                             $edv->ExamDataID = $d["ExamDataID"];
-                            $edv->Value = $d["Value"];                        
+                            $edv->Value = $d["Value"];
+                            if ($d["ExamDataID"]=="36") {
+                                $edv->Value = (isset($request->comments) ? $request->comments : "");
+                            }
                             $edv->save();
                           }
                         }
