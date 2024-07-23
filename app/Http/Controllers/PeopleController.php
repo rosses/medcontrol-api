@@ -450,6 +450,8 @@ class PeopleController extends Controller
         $people["Surgerys"] = PeopleSurgery::select(
                                     "PeopleSurgerys.*",
                                     "Surgerys.Name as SurgeryName",
+                                    "Dates.Date",
+                                    "Dates.Obs",
                                     "Diagnosis.Name as DiagnosisName"
                                 )
                                 ->join("Surgerys","Surgerys.SurgeryID","=","PeopleSurgerys.SurgeryID")
