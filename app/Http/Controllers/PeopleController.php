@@ -834,7 +834,7 @@ class PeopleController extends Controller
             ], 400);
         }
     }
-    public function getText($id) {
+    public function getText($id, Request $request) {
 
         try {
             $txt = date("Y-m-d H:i:s")."\n";        
@@ -862,16 +862,42 @@ class PeopleController extends Controller
             $edad = date_diff($fecha_hoy,$fecha_nac); 
             $imc = 0;
 
-            $edv = DB::select("
-            SELECT		E.ExamID,  ET.Name ExamTypeName, E.Name, ED.ExamDataType, ED.Name ExamDataName, EDV.Value 
-            FROM		Exams as E 
-            INNER JOIN	ExamTypes ET ON ET.ExamTypeID = E.ExamTypeID
-            INNER JOIN	ExamDatas ED ON ED.ExamID = E.ExamID 
-            INNER JOIN	ExamDataValues EDV ON EDV.ExamDataID = ED.ExamDataID 
-            INNER JOIN  Orders O ON O.PeopleID = '".$id."' AND O.OrderID = EDV.OrderID 
-            WHERE		E.Active = 1 
-            ORDER BY    ET.Side ASC, ET.SideOrder ASC 
-            ");
+            if ($request->type && $request->type=="date" && $request->aux && $request->aux!="") {
+                $edv = DB::select("
+                SELECT		E.ExamID,  ET.Name ExamTypeName, E.Name, ED.ExamDataType, ED.Name ExamDataName, EDV.Value 
+                FROM		Exams as E 
+                INNER JOIN	ExamTypes ET ON ET.ExamTypeID = E.ExamTypeID
+                INNER JOIN	ExamDatas ED ON ED.ExamID = E.ExamID 
+                INNER JOIN	ExamDataValues EDV ON EDV.ExamDataID = ED.ExamDataID 
+                INNER JOIN  Orders O ON O.PeopleID = '".$id."' AND O.OrderID = EDV.OrderID 
+                WHERE		E.Active = 1 AND EDV.DateID = '".$request->aux."'
+                ORDER BY    ET.Side ASC, ET.SideOrder ASC 
+                ");
+            }
+            else if ($request->type && $request->type=="single" && $request->aux && $request->aux!="") {
+                $edv = DB::select("
+                SELECT		E.ExamID,  ET.Name ExamTypeName, E.Name, ED.ExamDataType, ED.Name ExamDataName, EDV.Value 
+                FROM		Exams as E 
+                INNER JOIN	ExamTypes ET ON ET.ExamTypeID = E.ExamTypeID
+                INNER JOIN	ExamDatas ED ON ED.ExamID = E.ExamID 
+                INNER JOIN	ExamDataValues EDV ON EDV.ExamDataID = ED.ExamDataID 
+                INNER JOIN  Orders O ON O.PeopleID = '".$id."' AND O.OrderID = EDV.OrderID 
+                WHERE		E.Active = 1 AND EDV.GroupSingleID = '".$request->aux."'
+                ORDER BY    ET.Side ASC, ET.SideOrder ASC 
+                ");
+            }
+            else {
+                $edv = DB::select("
+                SELECT		E.ExamID,  ET.Name ExamTypeName, E.Name, ED.ExamDataType, ED.Name ExamDataName, EDV.Value 
+                FROM		Exams as E 
+                INNER JOIN	ExamTypes ET ON ET.ExamTypeID = E.ExamTypeID
+                INNER JOIN	ExamDatas ED ON ED.ExamID = E.ExamID 
+                INNER JOIN	ExamDataValues EDV ON EDV.ExamDataID = ED.ExamDataID 
+                INNER JOIN  Orders O ON O.PeopleID = '".$id."' AND O.OrderID = EDV.OrderID 
+                WHERE		E.Active = 1 
+                ORDER BY    ET.Side ASC, ET.SideOrder ASC 
+                ");
+            }
             //ORDER BY	ET.Name ASC, EDV.ExamDataValueID DESC
             $edv = json_decode(json_encode($edv), true);
             $results = [];
@@ -946,7 +972,7 @@ class PeopleController extends Controller
             foreach ($results as $type=>$d) {
                 $txt .= "\n".mb_strtoupper($type,'utf-8')."\n";
                 foreach ($d as $field=>$val) {
-                    if ($field=="Otros Hemograma") {
+                    if ($field!="Otros Hemograma") {
                         $txt .= "".$field.": ".$val."\n";
                         $ooo = $val;
                     }
