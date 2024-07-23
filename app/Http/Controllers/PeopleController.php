@@ -324,7 +324,7 @@ class PeopleController extends Controller
                 $p->DateAsEvaluation = $request->DateAsEvaluation;
             }
             */
-            if ($request->DateAsFinish) {
+            if ($request->DateAsEnter) {
                 $p->DateAsEnter = $request->DateAsEnter;
             }
             if ($request->DateAsFinish) {
@@ -447,7 +447,16 @@ class PeopleController extends Controller
                                 ->orderBy("Dates.DateID","DESC")
                                 ->get();
         */
-        $people["Surgerys"] = PeopleSurgery::select("*")->where("PeopleSurgerys.PeopleID", $id)->get();
+        $people["Surgerys"] = PeopleSurgery::select(
+                                    "PeopleSurgerys.*",
+                                    "Surgerys.Name as SurgeryName",
+                                    "Diagnosis.Name as DiagnosisName"
+                                )
+                                ->join("Surgerys","Surgerys.SurgeryID","=","PeopleSurgerys.SurgeryID")
+                                ->leftJoin("Dates","Dates.DateID","=","PeopleSurgerys.DateID")
+                                ->leftJoin("Diagnosis","Diagnosis.DiagnosisID","=","Dates.DiagnosisID")
+                                ->where("PeopleSurgerys.PeopleID", $id)
+                                ->get();
 
         $people["RequestedOrders"] = Order::select(
                                         "Exams.Name as ExamName",
