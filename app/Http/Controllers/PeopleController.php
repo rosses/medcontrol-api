@@ -503,7 +503,11 @@ class PeopleController extends Controller
                         DB::raw('CONVERT(varchar(5), GroupSingles.CreatedAt, 108) as Time'),
                         DB::raw('\'GS\' as OrderType'),
                     )
-                    ->join("Orders","Orders.GroupSingleID","=","GroupSingles.GroupSingleID")
+                    ->join('Orders', function($join)
+                    {
+                        $join->on('Orders.GroupSingleID', '=', 'GroupSingles.GroupSingleID');
+                        $join->on('Orders.PeopleID', '=', 'GroupSingles.PeopleID');
+                    })
                     ->where("Orders.PeopleID",$id)
                     ->where("GroupSingles.Type","=","order")
                     ->groupBy("GroupSingles.GroupSingleID", "GroupSingles.CreatedAt")

@@ -126,7 +126,13 @@ class ExamDataController extends Controller
         return response()->json($rows, 200);
     }
     public function getExamValuesByGroup($GroupSingleID) {
-        $rows = ExamDataValue::where("GroupSingleID", $GroupSingleID)->get();
+        $rows = ExamDataValue::select("ExamDataValues.*")
+                                ->join('Orders', function($join)
+                                {
+                                    $join->on("Orders.OrderID","=","ExamDataValues.OrderID");
+                                    $join->on("Orders.GroupSingleID","=","ExamDataValues.GroupSingleID");
+                                })
+                                ->where("ExamDataValues.GroupSingleID", $GroupSingleID)->get();
         return response()->json($rows, 200);
     }
     
