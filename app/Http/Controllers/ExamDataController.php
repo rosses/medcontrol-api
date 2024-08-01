@@ -70,8 +70,7 @@ class ExamDataController extends Controller
                                     $od->CreatedAt = date("Y-m-d H:i:s");
                                     $od->GroupSingleID = 0;
                                     $od->Comments = "";
-                                    $od->save();
-        
+                                    $od->save();        
                                     $edv->OrderID = $od->OrderID;
                                     $edv->DateID = 0;
                                     $edv->GroupSingleID = $request->SingleID;
