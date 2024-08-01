@@ -32,7 +32,6 @@ class ExamDataController extends Controller
             
             if (isset($request->DateID) && $request->DateID!="" && intval($request->DateID) > 0) {
                 if ($request->data && is_array($request->data)) {
-                    $is36 = false;
                     foreach ($request->data as $d) {
                         $edv = new ExamDataValue();
                         if (isset($d["ExamDataValueID"]) && $d["ExamDataValueID"]!=0) {
@@ -54,6 +53,35 @@ class ExamDataController extends Controller
                                     $edv->Value = (isset($request->comments) ? $request->comments : "");
                                 }
                                 $edv->save();
+                            }
+                        }
+                        else if ($OrderID == 0) {
+                            $order = Order::where("DateID", $request->DateID)->first();
+                            if ($order) {
+                                $OrderID = $order->OrderID;
+                            }
+                            if ($OrderID > 0) {
+                                if (isset($d["Value"])) {
+                                    $od = new Order();
+                                    $od->ExamID = $d["ExamID"];
+                                    $od->PeopleID = $order->PeopleID;
+                                    $od->DateID = $order->DateID;
+                                    $od->CreatedUserID = JWTAuth::user()->UserID;
+                                    $od->CreatedAt = date("Y-m-d H:i:s");
+                                    $od->GroupSingleID = 0;
+                                    $od->Comments = "";
+                                    $od->save();
+        
+                                    $edv->OrderID = $od->OrderID;
+                                    $edv->DateID = 0;
+                                    $edv->GroupSingleID = $request->SingleID;
+                                    $edv->ExamDataID = $d["ExamDataID"];
+                                    $edv->Value = $d["Value"];
+                                    if ($d["ExamDataID"]=="36") {
+                                        $edv->Value = (isset($request->comments) ? $request->comments : "");
+                                    }
+                                    $edv->save();
+                                }
                             }
                         }
                     }
