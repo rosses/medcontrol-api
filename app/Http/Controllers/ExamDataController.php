@@ -91,7 +91,7 @@ class ExamDataController extends Controller
                 if ($request->data && is_array($request->data)) {
                     foreach ($request->data as $d) {
                         $edv = new ExamDataValue();
-                        if (isset($d["ExamDataValueID"]) && $d["E84xamDataValueID"]!=0) {
+                        if (isset($d["ExamDataValueID"]) && $d["ExamDataValueID"]!=0) {
                             $edv = ExamDataValue::find($d["ExamDataValueID"]);
                         }
                         $OrderID = 0;
