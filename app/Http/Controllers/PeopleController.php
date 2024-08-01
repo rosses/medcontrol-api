@@ -45,6 +45,7 @@ class PeopleController extends Controller
                 $rows = $rows->where(function ($query) use ($request) {
                     $query->whereRaw("Peoples.Name COLLATE Latin1_General_CI_AI LIKE '%".$request->Search."%'")
                         ->orWhereRaw("Peoples.Lastname COLLATE Latin1_General_CI_AI LIKE '%".$request->Search."%'")
+                        ->orWhereRaw("Peoples.CardCode COLLATE Latin1_General_CI_AI LIKE '%".$request->Search."%'")
                         ->orWhereRaw("CONCAT(Peoples.Name, ' ', Peoples.Lastname) LIKE '%".$request->Search."%'");
                 });
             }
