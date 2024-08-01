@@ -985,12 +985,14 @@ class PeopleController extends Controller
                 foreach ($d as $field=>$val) {
                     if ($field!="Otros Hemograma") {
                         $txt .= "".$field.": ".$val."\n";
+                    }
+                    else {
                         $ooo = $val;
                     }
                 }
             } 
 
-            $txt .= "\n".$ooo."\n";
+            $txt .= "\nObservaciones\n".$ooo."\n";
 
             return response()->json([
                 "text" => $txt
