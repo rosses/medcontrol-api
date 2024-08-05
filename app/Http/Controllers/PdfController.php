@@ -355,6 +355,7 @@ class PdfController extends Controller {
         $evolutions =  Evolution::select("Evolutions.*", "Users.Name as CreatedByName")
                             ->join("Users","Users.UserID","=","Evolutions.CreatedUserID")
                             ->where("Evolutions.PeopleID", $id)
+                            ->orderBy("Evolutions.CreatedAt","DESC")
                             ->get();
 
         if ($people->Birthday=="") {
@@ -467,6 +468,7 @@ class PdfController extends Controller {
         $evolutions =  Evolution::select("Evolutions.*", "Users.Name as CreatedByName")
                             ->join("Users","Users.UserID","=","Evolutions.CreatedUserID")
                             ->where("Evolutions.PeopleID", $id)
+                            ->orderBy("Evolutions.CreatedAt","DESC")
                             ->get();
 
         if ($people->Birthday=="") {

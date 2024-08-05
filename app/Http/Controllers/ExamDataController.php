@@ -71,9 +71,10 @@ class ExamDataController extends Controller
                                     $od->GroupSingleID = 0;
                                     $od->Comments = "";
                                     $od->save();        
+
                                     $edv->OrderID = $od->OrderID;
-                                    $edv->DateID = 0;
-                                    $edv->GroupSingleID = $request->SingleID;
+                                    $edv->DateID = $request->DateID;
+                                    $edv->GroupSingleID = 0;
                                     $edv->ExamDataID = $d["ExamDataID"];
                                     $edv->Value = $d["Value"];
                                     if ($d["ExamDataID"]=="36") {
