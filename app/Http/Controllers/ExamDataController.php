@@ -47,6 +47,7 @@ class ExamDataController extends Controller
                                 $edv->OrderID = $OrderID;
                                 $edv->DateID = $request->DateID;
                                 $edv->GroupSingleID = 0;
+                                $edv->UpdatedAt = date("Y-m-d H:i:s");
                                 $edv->ExamDataID = $d["ExamDataID"];
                                 $edv->Value = $d["Value"];                        
                                 if ($d["ExamDataID"]=="36") {
@@ -74,6 +75,7 @@ class ExamDataController extends Controller
 
                                     $edv->OrderID = $od->OrderID;
                                     $edv->DateID = $request->DateID;
+                                    $edv->UpdatedAt = date("Y-m-d H:i:s");
                                     $edv->GroupSingleID = 0;
                                     $edv->ExamDataID = $d["ExamDataID"];
                                     $edv->Value = $d["Value"];
@@ -106,6 +108,7 @@ class ExamDataController extends Controller
                                 $edv->DateID = 0;
                                 $edv->GroupSingleID = $request->SingleID;
                                 $edv->ExamDataID = $d["ExamDataID"];
+                                $edv->UpdatedAt = date("Y-m-d H:i:s");
                                 $edv->Value = $d["Value"];                        
                                 $edv->save();
                             }
@@ -126,6 +129,7 @@ class ExamDataController extends Controller
                             $edv->DateID = 0;
                             $edv->GroupSingleID = $request->SingleID;
                             $edv->ExamDataID = $d["ExamDataID"];
+                            $edv->UpdatedAt = date("Y-m-d H:i:s");
                             $edv->Value = $d["Value"];
                             if ($d["ExamDataID"]=="36") {
                                 $edv->Value = (isset($request->comments) ? $request->comments : "");
