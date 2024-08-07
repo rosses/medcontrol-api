@@ -21,6 +21,12 @@ $router->get('/', function () use ($router) {
 Route::group([
     'prefix' => 'v1'
 ],function($router) {
+
+    Route::get('notify/create','NotifyController@create');
+    Route::get('notify/total','NotifyController@total');
+    Route::get('notify/read/{id}','NotifyController@read');
+    Route::get('notify/list','NotifyController@list');
+
     /* Masterdata Lab endpoints */
     Route::group([
         'prefix' => 'lab',
